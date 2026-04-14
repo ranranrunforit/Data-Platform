@@ -1,0 +1,23 @@
+# ── Airflow providers ─────────────────────────────────────────────────────────
+apache-airflow-providers-apache-spark==4.7.1
+apache-airflow-providers-celery==3.6.2        # CeleryExecutor
+apache-airflow-providers-redis==3.6.2
+apache-airflow-providers-amazon==8.16.0       # S3/MinIO sensors + operators
+apache-airflow-providers-http==4.9.0
+
+# ── Data stack ────────────────────────────────────────────────────────────────
+pyspark==3.5.1
+delta-spark==3.1.0
+dbt-duckdb==1.7.4
+duckdb==0.10.3
+great-expectations==0.18.19
+
+# ── Kafka ─────────────────────────────────────────────────────────────────────
+kafka-python==2.0.2
+
+# ── AWS / MinIO ───────────────────────────────────────────────────────────────
+boto3==1.34.69
+
+# ── Utilities ─────────────────────────────────────────────────────────────────
+numpy==1.26.4
+python-dotenv==1.0.1

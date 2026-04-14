@@ -1,0 +1,31 @@
+name: ai_data_platform
+version: "1.0.0"
+config-version: 2
+
+profile: ai_data_platform
+
+model-paths: ["models"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  ai_data_platform:
+    staging:
+      +materialized: view
+      +schema: staging
+
+    intermediate:
+      +materialized: table
+      +schema: intermediate
+
+    marts:
+      +materialized: table
+      +schema: marts
+
+vars:
+  # Override in CI with --vars '{"silver_path": "/opt/data/silver"}'
+  silver_path: "s3://silver"
+  gold_path: "s3://gold"
+  minio_endpoint: "http://minio:9000"

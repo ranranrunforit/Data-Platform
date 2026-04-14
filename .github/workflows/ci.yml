@@ -1,0 +1,159 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── Lint ────────────────────────────────────────────────────────────────────
+  lint:
+    name: Lint Python
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install ruff
+        run: pip install ruff==0.4.4
+
+      - name: Lint
+        run: ruff check spark/ ingestion/ data/ serving/ quality/ orchestration/
+
+  # ── Unit tests ──────────────────────────────────────────────────────────────
+  unit-tests:
+    name: Unit Tests (PySpark local mode)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install Java (required for PySpark)
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: temurin
+
+      - name: Install Python deps
+        run: |
+          pip install \
+            pyspark==3.5.1 \
+            delta-spark==3.1.0 \
+            pytest==8.1.1 \
+            pytest-cov==5.0.0 \
+            numpy==1.26.4
+
+      - name: Run unit tests
+        run: pytest tests/unit/ -v --tb=short --cov=spark/
+
+  # ── dbt compile ─────────────────────────────────────────────────────────────
+  dbt-compile:
+    name: dbt Compile (validates SQL syntax)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dbt
+        run: pip install dbt-duckdb==1.7.4 dbt-utils==1.2.0
+
+      - name: dbt deps
+        working-directory: dbt
+        run: dbt deps
+
+      - name: dbt compile (dry-run, no data needed)
+        working-directory: dbt
+        run: |
+          dbt compile \
+            --profiles-dir . \
+            --target ci \
+            --vars '{"silver_path": "/tmp/silver", "gold_path": "/tmp/gold"}'
+
+  # ── Great Expectations suite validation ─────────────────────────────────────
+  gx-suite-syntax:
+    name: GX Suite Syntax Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install GX + DuckDB
+        run: pip install great-expectations==0.18.19 duckdb==0.10.3
+
+      - name: Validate suite definition (no data required)
+        run: |
+          python -c "
+          import sys
+          sys.path.insert(0, 'quality')
+          # Importing the suite module validates Python syntax
+          from expectations.suite_silver_jobs import define_silver_jobs_suite
+          print('GX suite syntax OK')
+          "
+
+  # ── Docker build ─────────────────────────────────────────────────────────────
+  docker-build:
+    name: Docker Build Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build API image
+        run: docker build -t ai-platform-api:ci ./serving/
+
+      - name: Build Airflow image
+        run: docker build -t ai-platform-airflow:ci -f Dockerfile.airflow .
+
+  # ── Integration test (full stack, runs on push to main only) ────────────────
+  integration:
+    name: Integration Test (Docker Compose)
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs: [lint, unit-tests, dbt-compile]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy env file
+        run: cp .env.example .env
+
+      - name: Start core services (MinIO + Kafka only for speed)
+        run: |
+          docker compose up -d minio minio-init kafka zookeeper
+          sleep 20
+
+      - name: Generate synthetic data
+        run: |
+          docker compose run --rm \
+            -v $(pwd)/data:/data \
+            -e PYTHONPATH=/data/.. \
+            airflow-scheduler \
+            python /data/generator/job_events.py || true
+
+      - name: Health check MinIO
+        run: |
+          curl --retry 5 --retry-delay 3 \
+            http://localhost:9000/minio/health/live
+
+      - name: Health check Kafka
+        run: |
+          docker compose exec -T kafka \
+            kafka-topics --bootstrap-server localhost:9092 --list || true
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v

@@ -1,0 +1,25 @@
+FROM apache/airflow:2.8.1-python3.11
+
+USER root
+
+# Java (required for PySpark / spark-submit)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    default-jdk-headless \
+    curl \
+    procps \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Spark client (needed for SparkSubmitOperator)
+ARG SPARK_VERSION=3.5.1
+RUN curl -fsSL "https://downloads.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop3.tgz" \
+    | tar -xz -C /opt \
+    && mv "/opt/spark-${SPARK_VERSION}-bin-hadoop3" /opt/spark
+
+ENV SPARK_HOME=/opt/spark
+ENV PATH="$PATH:/opt/spark/bin"
+ENV JAVA_HOME=/usr/lib/jvm/default-java
+
+USER airflow
+
+COPY requirements-airflow.txt /tmp/requirements-airflow.txt
+RUN pip install --no-cache-dir -r /tmp/requirements-airflow.txt

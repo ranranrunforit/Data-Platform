@@ -1,0 +1,59 @@
+version: 2
+
+models:
+  - name: cost_attribution
+    description: >
+      Daily GPU spend allocated by org → user → model architecture.
+      Grain: (job_date, org_id, user_id, model_arch, gpu_tier, gpu_type, framework).
+      This is the primary billing analytics mart — used by finance, customer success, and product.
+    columns:
+      - name: attribution_id
+        description: "Surrogate key — deterministic hash of grain columns"
+        tests:
+          - unique
+          - not_null
+      - name: total_cost_usd
+        description: "Total billable USD spend for this grain on this day"
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+      - name: oom_rate
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "IS NULL OR (>= 0 AND <= 1)"
+      - name: success_rate
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "IS NULL OR (>= 0 AND <= 1)"
+
+  - name: gpu_utilization_hourly
+    description: >
+      Hourly GPU utilization aggregated from 96-node cluster metrics.
+      Grain: (hour_bucket, gpu_type, gpu_tier, rack_id).
+      Used for capacity planning and thermal monitoring.
+    columns:
+      - name: avg_gpu_util_pct
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0 AND <= 100"
+      - name: high_util_rate
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "IS NULL OR (>= 0 AND <= 1)"
+
+  - name: job_performance_sla
+    description: >
+      Daily p50/p95/p99 inference latency by model and region.
+      Grain: (log_date, model_id, region).
+      SLO breach flags are pre-computed for alert queries.
+    columns:
+      - name: p99_latency_ms
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "> 0"
+      - name: cache_hit_rate
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0 AND <= 1"

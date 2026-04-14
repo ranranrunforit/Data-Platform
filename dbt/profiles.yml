@@ -1,0 +1,41 @@
+ai_data_platform:
+  target: dev
+  outputs:
+
+    # ── Local dev: DuckDB reads Delta files from local volume ─────────────────
+    dev:
+      type: duckdb
+      path: /tmp/ai_platform_dev.duckdb
+      threads: 4
+      extensions:
+        - httpfs
+        - delta
+      settings:
+        s3_endpoint: "minio:9000"
+        s3_access_key_id: "minioadmin"
+        s3_secret_access_key: "minioadmin123"
+        s3_use_ssl: false
+        s3_url_style: path
+
+    # ── Production: same config, different path ───────────────────────────────
+    prod:
+      type: duckdb
+      path: /tmp/ai_platform_prod.duckdb
+      threads: 8
+      extensions:
+        - httpfs
+        - delta
+      settings:
+        s3_endpoint: "minio:9000"
+        s3_access_key_id: "minioadmin"
+        s3_secret_access_key: "minioadmin123"
+        s3_use_ssl: false
+        s3_url_style: path
+
+    # ── CI: in-memory DuckDB with local test fixtures ─────────────────────────
+    ci:
+      type: duckdb
+      path: ":memory:"
+      threads: 2
+      extensions:
+        - delta

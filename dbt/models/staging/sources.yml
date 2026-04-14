@@ -1,0 +1,42 @@
+version: 2
+
+sources:
+  - name: silver
+    description: "Silver Delta Lake tables written by PySpark bronze_to_silver job"
+    tables:
+      - name: jobs
+        description: "Cleaned GPU training job records with completion MERGE applied"
+        meta:
+          delta_path: "{{ var('silver_path') }}/jobs"
+        columns:
+          - name: job_id
+            description: "Unique job identifier (UUID)"
+            tests:
+              - unique
+              - not_null
+          - name: org_id
+            tests: [not_null]
+          - name: gpu_type
+            tests:
+              - accepted_values:
+                  values: ["H100-SXM5-80GB", "A100-SXM4-80GB", "A100-PCIe-40GB", "RTX-4090", "A10G"]
+          - name: gpu_count
+            tests: [not_null]
+          - name: started_at
+            tests: [not_null]
+
+      - name: inference
+        description: "Cleaned inference API request logs"
+        meta:
+          delta_path: "{{ var('silver_path') }}/inference"
+        columns:
+          - name: request_id
+            tests:
+              - unique
+              - not_null
+          - name: model_id
+            tests: [not_null]
+          - name: status_code
+            tests:
+              - accepted_values:
+                  values: [200, 429, 500, 503]

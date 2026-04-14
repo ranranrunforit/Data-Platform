@@ -1,0 +1,35 @@
+{
+  "name": "AI Data Platform",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "airflow-scheduler",
+  "workspaceFolder": "/workspace",
+
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+
+  "postCreateCommand": "cp .env.example .env && pip install dbt-duckdb==1.7.4 great-expectations==0.18.19",
+
+  "forwardPorts": [8000, 8080, 8081, 8082, 5555, 9000, 9001],
+
+  "portsAttributes": {
+    "8000": { "label": "API (FastAPI)" },
+    "8080": { "label": "Spark Master UI" },
+    "8081": { "label": "Airflow UI" },
+    "8082": { "label": "Kafka UI" },
+    "5555": { "label": "Flower (Celery)" },
+    "9000": { "label": "MinIO API" },
+    "9001": { "label": "MinIO Console" }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "innoverio.vscode-dbt-power-user",
+        "hashicorp.terraform",
+        "ms-azuretools.vscode-docker"
+      ]
+    }
+  }
+}
