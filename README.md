@@ -67,7 +67,7 @@ flowchart LR
 
 ## Quickstart
 
-**Requirements:** Docker + Docker Compose + Python 3.11. Nothing else.
+**Requirements:** Docker + Docker Compose + Python 3.11.
 
 ```bash
 git clone <repo>
