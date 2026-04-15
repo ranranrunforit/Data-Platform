@@ -34,7 +34,7 @@ def main():
         for path, z_cols in tables:
             print(f"Optimizing {path} (Z-ORDER by {z_cols})...")
             optimize_delta_table(spark, path, z_cols)
-            print(f"  Done.")
+            print("  Done.")
 
         # Vacuum old files (keep 7 days of history)
         print("Vacuuming Silver tables...")

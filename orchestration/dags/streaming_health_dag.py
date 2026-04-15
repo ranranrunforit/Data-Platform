@@ -18,7 +18,6 @@ from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import BranchPythonOperator, PythonOperator
-from airflow.utils.trigger_rule import TriggerRule
 
 DEFAULT_ARGS = {
     "owner": "data-engineering",
@@ -43,7 +42,6 @@ def check_kafka_lag(**context) -> None:
     Alerts if lag > 10,000 messages (streaming is falling behind).
     """
     from kafka import KafkaAdminClient
-    from kafka.structs import TopicPartition
     import os
 
     bootstrap = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:29092")

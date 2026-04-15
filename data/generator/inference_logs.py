@@ -117,10 +117,10 @@ def main():
         for log in logs:
             f.write(json.dumps(log) + "\n")
 
-    success = [l for l in logs if l["status_code"] == 200]
+    success = [r for r in logs if r["status_code"] == 200]
     print(f"  {len(logs):,} requests → {out_path}")
     print(f"  Success rate: {len(success)/len(logs):.1%}")
-    latencies = [l["latency_ms"] for l in success]
+    latencies = [r["latency_ms"] for r in success]
     latencies.sort()
     p50 = latencies[int(0.50 * len(latencies))]
     p99 = latencies[int(0.99 * len(latencies))]

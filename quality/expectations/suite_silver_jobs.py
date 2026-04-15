@@ -14,11 +14,6 @@ blocking promotion from Silver → Gold on failure.
 import os
 
 import great_expectations as gx
-from great_expectations.core.batch import RuntimeBatchRequest
-from great_expectations.data_context.types.base import (
-    DataContextConfig,
-    FilesystemStoreBackendDefaults,
-)
 
 MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "http://minio:9000")
 AWS_KEY = os.getenv("AWS_ACCESS_KEY_ID", "minioadmin")

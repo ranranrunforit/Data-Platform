@@ -11,7 +11,6 @@ Can run in two modes:
 import argparse
 import json
 import os
-import random
 import sys
 import time
 from datetime import datetime

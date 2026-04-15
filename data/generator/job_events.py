@@ -8,7 +8,6 @@ Output: data/raw/job_events/job_events_<date>.jsonl
 """
 
 import json
-import os
 import random
 from datetime import datetime, timedelta
 from pathlib import Path

@@ -24,7 +24,6 @@ from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import BranchPythonOperator, PythonOperator
 from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
-from airflow.sensors.filesystem import FileSensor
 from airflow.utils.trigger_rule import TriggerRule
 
 # ── Default args ──────────────────────────────────────────────────────────────

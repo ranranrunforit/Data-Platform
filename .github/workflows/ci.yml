@@ -68,7 +68,7 @@ jobs:
           cache: pip
 
       - name: Install dbt
-        run: pip install dbt-duckdb==1.7.4 dbt-utils==1.2.0
+        run: pip install dbt-duckdb==1.7.4
 
       - name: dbt deps
         working-directory: dbt
