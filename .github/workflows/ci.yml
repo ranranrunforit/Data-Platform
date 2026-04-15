@@ -133,8 +133,8 @@ jobs:
 
       - name: Start core services (MinIO + Kafka only for speed)
         run: |
-          docker compose up -d minio minio-init kafka zookeeper
-          sleep 20
+          docker compose up -d minio minio-init zookeeper kafka-1
+          sleep 30
 
       - name: Generate synthetic data
         run: |
@@ -151,7 +151,7 @@ jobs:
 
       - name: Health check Kafka
         run: |
-          docker compose exec -T kafka \
+          docker compose exec -T kafka-1 \
             kafka-topics --bootstrap-server localhost:9092 --list || true
 
       - name: Tear down
