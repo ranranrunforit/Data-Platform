@@ -9,7 +9,7 @@
 
   // Install Docker CLI (talks to host daemon via mounted socket) + Python deps.
   // No Docker daemon runs inside the container — the host Codespaces VM provides it.
-  "postCreateCommand": "sudo apt-get update -qq && sudo apt-get install -y -qq docker.io docker-compose-v2 && sudo chmod 666 /var/run/docker.sock && cp -n .env.example .env 2>/dev/null || true && pip install --quiet numpy pandas faker cryptography dbt-duckdb==1.7.4 great-expectations==0.18.19",
+  "postCreateCommand": "sudo apt-get update -qq && sudo apt-get install -y -qq docker.io && mkdir -p ~/.docker/cli-plugins && curl -fsSL https://github.com/docker/compose/releases/download/v2.24.5/docker-compose-linux-x86_64 -o ~/.docker/cli-plugins/docker-compose && chmod +x ~/.docker/cli-plugins/docker-compose && sudo chmod 666 /var/run/docker.sock && cp -n .env.example .env 2>/dev/null || true && pip install --quiet numpy pandas faker cryptography dbt-duckdb==1.7.4 great-expectations==0.18.19",
 
   "forwardPorts": [8000, 8080, 8081, 8082, 5555, 9000, 9001],
 
