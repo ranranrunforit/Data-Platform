@@ -1,14 +1,11 @@
 {
   "name": "AI Data Platform",
-  "dockerComposeFile": "../docker-compose.yml",
-  "service": "airflow-scheduler",
-  "workspaceFolder": "/workspace",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 
-  "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
-  },
-
-  "postCreateCommand": "cp .env.example .env && pip install dbt-duckdb==1.7.4 great-expectations==0.18.19",
+  // Copy .env before any docker compose commands so compose validation succeeds.
+  // Python deps needed for `make generate` are installed here too.
+  "postCreateCommand": "cp -n .env.example .env 2>/dev/null || true && pip install --quiet numpy pandas faker cryptography dbt-duckdb==1.7.4 great-expectations==0.18.19",
 
   "forwardPorts": [8000, 8080, 8081, 8082, 5555, 9000, 9001],
 
