@@ -1,30 +1,31 @@
-# ── Core Airflow (pinned to prevent pip from upgrading it mid-install) ─────────
-apache-airflow==2.8.1
+# ── Core Airflow pin ──────────────────────────────────────────────────────────
+# Must match the base image version so pip never upgrades/downgrades core airflow
+apache-airflow==2.10.4
 
-# ── Airflow providers ─────────────────────────────────────────────────────────
-apache-airflow-providers-apache-spark==4.7.0  # 4.7.0 = version released for airflow 2.8.x
-apache-airflow-providers-celery==3.6.2        # CeleryExecutor
-apache-airflow-providers-redis==4.4.4
-apache-airflow-providers-amazon==8.16.0       # S3/MinIO sensors + operators
-apache-airflow-providers-http==4.9.0
+# ── Airflow providers (versions from constraints-2.10.4/constraints-3.11.txt) ─
+apache-airflow-providers-apache-spark==4.11.3
+apache-airflow-providers-celery==3.8.5
+apache-airflow-providers-redis==3.8.0
+apache-airflow-providers-amazon==9.1.0
+apache-airflow-providers-http==4.13.3
 
-# ── Pin to stop pip backtracking (grpcio-status>=1.59.0 from spark provider) ──
-grpcio==1.62.3
+# ── gRPC / protobuf pins (from constraints-2.10.4, stops pip backtracking) ───
+grpcio==1.68.1
 grpcio-status==1.62.3
-googleapis-common-protos==1.62.0
+googleapis-common-protos==1.66.0
 
 # ── Data stack ────────────────────────────────────────────────────────────────
-pyspark==3.5.1
+pyspark==3.5.3
 delta-spark==3.1.0
 dbt-duckdb==1.7.4
-duckdb==0.10.3
+duckdb==1.1.3
 great-expectations==0.18.19
 
 # ── Kafka ─────────────────────────────────────────────────────────────────────
 kafka-python==2.0.2
 
 # ── AWS / MinIO ───────────────────────────────────────────────────────────────
-boto3==1.34.69
+boto3==1.35.36
 
 # ── Utilities ─────────────────────────────────────────────────────────────────
 numpy==1.26.4
