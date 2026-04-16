@@ -5,6 +5,11 @@ apache-airflow-providers-redis==4.4.4
 apache-airflow-providers-amazon==8.16.0       # S3/MinIO sensors + operators
 apache-airflow-providers-http==4.9.0
 
+# ── Pin to stop pip backtracking (grpcio-status>=1.59.0 from spark provider) ──
+grpcio==1.62.3
+grpcio-status==1.62.3
+googleapis-common-protos==1.62.0
+
 # ── Data stack ────────────────────────────────────────────────────────────────
 pyspark==3.5.1
 delta-spark==3.1.0
