@@ -1,5 +1,8 @@
+# ── Core Airflow (pinned to prevent pip from upgrading it mid-install) ─────────
+apache-airflow==2.8.1
+
 # ── Airflow providers ─────────────────────────────────────────────────────────
-apache-airflow-providers-apache-spark==4.7.1
+apache-airflow-providers-apache-spark==4.7.0  # 4.7.0 = version released for airflow 2.8.x
 apache-airflow-providers-celery==3.6.2        # CeleryExecutor
 apache-airflow-providers-redis==4.4.4
 apache-airflow-providers-amazon==8.16.0       # S3/MinIO sensors + operators
