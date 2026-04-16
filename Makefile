@@ -78,16 +78,16 @@ generate: ## Generate synthetic AI-infra telemetry → data/raw/
 ingest: ## Publish historical data to Kafka (seeds Bronze layer)
 	@echo "Publishing job events..."
 	$(COMPOSE) run --rm airflow-worker \
-		python /opt/spark-apps/../ingestion/kafka/producers/job_producer.py
+		python /opt/ingestion/kafka/producers/job_producer.py
 	@echo "Publishing inference logs..."
 	$(COMPOSE) run --rm airflow-worker \
-		python /opt/spark-apps/../ingestion/kafka/producers/inference_producer.py
+		python /opt/ingestion/kafka/producers/inference_producer.py
 
 # ── Pipeline execution ─────────────────────────────────────────────────────────
 
 pipeline: ## Run full batch pipeline (bronze → silver → GX → gold)
 	@echo "==> Step 1: Spark bronze → silver"
-	$(COMPOSE) exec spark-master spark-submit \
+	$(COMPOSE) exec spark-master /opt/spark/bin/spark-submit \
 		--master spark://spark-master:7077 \
 		--packages $(shell grep SPARK_PACKAGES .env | cut -d= -f2) \
 		--conf spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension \
@@ -114,7 +114,7 @@ gx-validate: ## Run Great Expectations checkpoint against silver layer
 		python /opt/quality/checkpoints/silver_checkpoint.py
 
 stream-start: ## Start Spark Structured Streaming consumer (Ctrl+C to stop)
-	$(COMPOSE) exec spark-master spark-submit \
+	$(COMPOSE) exec spark-master /opt/spark/bin/spark-submit \
 		--master spark://spark-master:7077 \
 		--packages io.delta:delta-spark_2.12:3.1.0,org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1,org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.12.262 \
 		--conf spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension \
@@ -125,7 +125,7 @@ stream-start: ## Start Spark Structured Streaming consumer (Ctrl+C to stop)
 
 stream-live: ## Start live inference producer (100 req/s → Kafka)
 	$(COMPOSE) run --rm airflow-worker \
-		python /opt/spark-apps/../ingestion/kafka/producers/inference_producer.py --live --rate 100
+		python /opt/ingestion/kafka/producers/inference_producer.py --live --rate 100
 
 # ── Kafka operations ───────────────────────────────────────────────────────────
 

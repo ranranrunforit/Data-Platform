@@ -52,6 +52,7 @@ x-airflow-common: &airflow-common
     - ./spark:/opt/spark-apps:ro
     - ./dbt:/opt/dbt:ro
     - ./quality:/opt/quality:ro
+    - ./ingestion:/opt/ingestion:ro
     - airflow-logs:/opt/airflow/logs
   depends_on:
     postgres:
