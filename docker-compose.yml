@@ -362,14 +362,12 @@ services:
   # ════════════════════════════════════════════════════════════════════════════
 
   spark-master:
-    image: bitnami/spark:3.5
+    image: apache/spark:3.5.4
     container_name: spark-master
+    command: ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.master.Master"]
     environment:
-      SPARK_MODE: master
       SPARK_MASTER_HOST: spark-master
-      SPARK_MASTER_WEBUI_PORT: 8080
-      SPARK_RPC_AUTHENTICATION_ENABLED: "no"
-      SPARK_RPC_ENCRYPTION_ENABLED: "no"
+      SPARK_MASTER_WEBUI_PORT: "8080"
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-minioadmin}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-minioadmin123}
     ports:
@@ -377,7 +375,7 @@ services:
       - "7077:7077"
     volumes:
       - ./spark:/opt/spark-apps:ro
-      - ./spark/conf/spark-defaults.conf:/opt/bitnami/spark/conf/spark-defaults.conf:ro
+      - ./spark/conf/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf:ro
       - spark-events:/tmp/spark-events
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080"]
@@ -396,12 +394,11 @@ services:
   # No container_name here — required for --scale to work.
   # Default: 2 workers started by `make up`. Scale with: make scale-spark N=4
   spark-worker:
-    image: bitnami/spark:3.5
+    image: apache/spark:3.5.4
+    command: ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.worker.Worker", "spark://spark-master:7077"]
     environment:
-      SPARK_MODE: worker
-      SPARK_MASTER_URL: spark://spark-master:7077
       SPARK_WORKER_MEMORY: 3G
-      SPARK_WORKER_CORES: 2
+      SPARK_WORKER_CORES: "2"
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-minioadmin}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-minioadmin123}
     depends_on:
@@ -409,7 +406,7 @@ services:
         condition: service_healthy
     volumes:
       - ./spark:/opt/spark-apps:ro
-      - ./spark/conf/spark-defaults.conf:/opt/bitnami/spark/conf/spark-defaults.conf:ro
+      - ./spark/conf/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf:ro
       - spark-events:/tmp/spark-events
     restart: always
     logging: *default-logging
