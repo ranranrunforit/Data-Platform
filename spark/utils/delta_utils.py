@@ -55,12 +55,14 @@ def upsert_to_delta(
     merge_condition: str,
     update_set: Dict[str, str],
     partition_by: Optional[List[str]] = None,
+    overwrite: bool = False,
 ) -> None:
     """
     Generic MERGE (upsert) into a Delta table.
 
     Creates the table on first run; subsequent runs merge.
-    This is the core pattern for handling late-arriving events.
+    Pass overwrite=True to always overwrite (e.g. for full bronze→silver reloads
+    where MERGE would wastefully re-read all existing data).
 
     Args:
         source_df:       New / updated records.
@@ -68,8 +70,9 @@ def upsert_to_delta(
         merge_condition: SQL condition joining target and source (e.g. "t.job_id = s.job_id").
         update_set:      Columns to update on match {"target_col": "source_expr"}.
         partition_by:    Optional partition columns for new table creation.
+        overwrite:       If True, always overwrite instead of merging.
     """
-    if DeltaTable.isDeltaTable(spark, target_path):
+    if not overwrite and DeltaTable.isDeltaTable(spark, target_path):
         target = DeltaTable.forPath(spark, target_path)
         (
             target.alias("t")

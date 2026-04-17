@@ -231,7 +231,6 @@ def main():
             target_path=f"{SILVER}/jobs",
             merge_condition="t.job_id = s.job_id",
             update_set={
-                # Only update mutable fields; don't overwrite started_at, org, etc.
                 "ended_at":       "s.ended_at",
                 "duration_hours": "s.duration_hours",
                 "exit_code":      "s.exit_code",
@@ -241,6 +240,7 @@ def main():
                 "_ingested_at":   "s._ingested_at",
             },
             partition_by=["job_date"],
+            overwrite=True,
         )
         print(f"  Written to {SILVER}/jobs (Delta)")
 
@@ -269,6 +269,7 @@ def main():
                 "_ingested_at":  "s._ingested_at",
             },
             partition_by=["log_date"],
+            overwrite=True,
         )
         print(f"  Written to {SILVER}/inference (Delta)")
 
