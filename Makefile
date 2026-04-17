@@ -90,6 +90,7 @@ pipeline: ## Run full batch pipeline (bronze → silver → GX → gold)
 	$(COMPOSE) exec spark-master /opt/spark/bin/spark-submit \
 		--master spark://spark-master:7077 \
 		--packages $(shell grep SPARK_PACKAGES .env | cut -d= -f2) \
+		--conf spark.jars.ivy=/tmp/.ivy2 \
 		--conf spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension \
 		--conf spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog \
 		--conf spark.hadoop.fs.s3a.endpoint=http://minio:9000 \
