@@ -6,7 +6,7 @@ job gets consistent config without copy-paste.
 """
 
 import os
-from typing import Optional
+from typing import Dict, List, Optional
 
 from delta import DeltaTable, configure_spark_with_delta_pip
 from pyspark.sql import DataFrame, SparkSession
@@ -53,8 +53,8 @@ def upsert_to_delta(
     source_df: DataFrame,
     target_path: str,
     merge_condition: str,
-    update_set: dict[str, str],
-    partition_by: Optional[list[str]] = None,
+    update_set: Dict[str, str],
+    partition_by: Optional[List[str]] = None,
 ) -> None:
     """
     Generic MERGE (upsert) into a Delta table.
@@ -86,7 +86,7 @@ def upsert_to_delta(
         writer.save(target_path)
 
 
-def optimize_delta_table(spark: SparkSession, path: str, z_order_cols: list[str]) -> None:
+def optimize_delta_table(spark: SparkSession, path: str, z_order_cols: List[str]) -> None:
     """
     Run OPTIMIZE + ZORDER on a Delta table.
 
