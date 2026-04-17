@@ -364,7 +364,9 @@ services:
   # ════════════════════════════════════════════════════════════════════════════
 
   spark-master:
-    image: apache/spark:3.5.4
+    build:
+      context: .
+      dockerfile: Dockerfile.spark
     container_name: spark-master
     command: ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.master.Master"]
     environment:
@@ -396,7 +398,9 @@ services:
   # No container_name here — required for --scale to work.
   # Default: 2 workers started by `make up`. Scale with: make scale-spark N=4
   spark-worker:
-    image: apache/spark:3.5.4
+    build:
+      context: .
+      dockerfile: Dockerfile.spark
     command: ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.worker.Worker", "spark://spark-master:7077"]
     environment:
       SPARK_WORKER_MEMORY: 3G

@@ -1,0 +1,5 @@
+FROM apache/spark:3.5.4
+
+USER root
+RUN pip install --no-cache-dir importlib_metadata
+USER spark
