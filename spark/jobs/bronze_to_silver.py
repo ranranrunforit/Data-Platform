@@ -31,7 +31,9 @@ from pyspark.sql.types import (
 )
 
 # Make utils importable when submitted via spark-submit
-sys.path.insert(0, "/opt/spark-apps")
+# /tmp/spark-apps is populated by `docker cp` in the pipeline Makefile target
+sys.path.insert(0, "/tmp/spark-apps")
+sys.path.insert(0, "/opt/spark-apps")  # fallback for local dev
 from utils.delta_utils import get_spark_session, upsert_to_delta
 
 BRONZE = os.getenv("DATA_BRONZE_PATH", "s3a://bronze")
