@@ -379,7 +379,6 @@ services:
       - "7077:7077"
     volumes:
       - ./spark:/opt/spark-apps:ro
-      - ./spark/conf/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf:ro
       - spark-events:/tmp/spark-events
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080"]
@@ -412,7 +411,6 @@ services:
         condition: service_healthy
     volumes:
       - ./spark:/opt/spark-apps:ro
-      - ./spark/conf/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf:ro
       - spark-events:/tmp/spark-events
     restart: always
     logging: *default-logging
