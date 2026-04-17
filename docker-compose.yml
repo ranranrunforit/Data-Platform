@@ -53,6 +53,7 @@ x-airflow-common: &airflow-common
     - ./dbt:/opt/dbt:ro
     - ./quality:/opt/quality:ro
     - ./ingestion:/opt/ingestion:ro
+    - ./data:/opt/data:ro
     - airflow-logs:/opt/airflow/logs
   depends_on:
     postgres:

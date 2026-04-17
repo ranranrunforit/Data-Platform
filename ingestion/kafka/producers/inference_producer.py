@@ -19,8 +19,8 @@ from pathlib import Path
 from kafka import KafkaProducer
 from kafka.errors import NoBrokersAvailable
 
-# Add project root for generator import
-sys.path.insert(0, str(Path(__file__).parents[4]))
+# Add /opt to path so `from data.generator...` resolves to /opt/data/generator
+sys.path.insert(0, str(Path(__file__).parents[3]))
 from data.generator.inference_logs import generate_inference_logs
 
 BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
