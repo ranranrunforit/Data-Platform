@@ -8,7 +8,7 @@ job gets consistent config without copy-paste.
 import os
 from typing import Dict, List, Optional
 
-from delta import DeltaTable, configure_spark_with_delta_pip
+from delta import DeltaTable
 from pyspark.sql import DataFrame, SparkSession
 
 
@@ -45,7 +45,7 @@ def get_spark_session(app_name: str, master: Optional[str] = None) -> SparkSessi
         .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
     )
 
-    return configure_spark_with_delta_pip(builder).getOrCreate()
+    return builder.getOrCreate()
 
 
 def upsert_to_delta(

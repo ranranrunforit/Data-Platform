@@ -1,5 +1,5 @@
 FROM apache/spark:3.5.4
 
 USER root
-RUN pip install --no-cache-dir importlib_metadata
+RUN pip install --no-cache-dir "delta-spark==3.1.0" "pyspark==3.5.4"
 USER spark
