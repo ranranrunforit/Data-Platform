@@ -75,13 +75,18 @@ generate: ## Generate synthetic AI-infra telemetry → data/raw/
 	python3 data/generator/node_metrics.py
 	@echo "Done. Files in data/raw/"
 
-ingest: ## Publish historical data to Kafka (seeds Bronze layer)
+ingest: upload-bronze ## Publish historical data to Kafka and upload raw files to MinIO bronze
 	@echo "Publishing job events..."
 	$(COMPOSE) run --rm airflow-worker \
 		python /opt/ingestion/kafka/producers/job_producer.py
 	@echo "Publishing inference logs..."
 	$(COMPOSE) run --rm airflow-worker \
 		python /opt/ingestion/kafka/producers/inference_producer.py
+
+upload-bronze: ## Upload raw JSONL files from data/raw/ to MinIO bronze bucket
+	@echo "Uploading raw data to MinIO bronze..."
+	$(COMPOSE) run --rm airflow-worker \
+		python /opt/ingestion/upload_to_bronze.py
 
 # ── Pipeline execution ─────────────────────────────────────────────────────────
 
