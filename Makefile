@@ -108,6 +108,7 @@ pipeline: ## Run full batch pipeline (bronze → silver → GX → gold)
 		--conf spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog \
 		--conf spark.hadoop.fs.s3a.endpoint=http://minio:9000 \
 		--conf spark.hadoop.fs.s3a.path.style.access=true \
+		--conf spark.sql.maxConcurrentOutputFileWriters=1 \
 		/tmp/spark-apps/jobs/bronze_to_silver.py
 	@echo "==> Step 2: GX quality gate"
 	$(MAKE) gx-validate
