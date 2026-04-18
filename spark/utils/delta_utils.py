@@ -82,11 +82,8 @@ def upsert_to_delta(
             .execute()
         )
     else:
-        # First write — create the table.
-        # Sort by partition columns so DynamicPartitionDataSingleWriter opens at most
-        # one Parquet writer per date at a time, keeping peak write-buffer memory low.
-        df = source_df.sort(*partition_by) if partition_by else source_df
-        writer = df.write.format("delta").mode("overwrite")
+        # First write — create the table
+        writer = source_df.write.format("delta").mode("overwrite")
         if partition_by:
             writer = writer.partitionBy(*partition_by)
         writer.save(target_path)
