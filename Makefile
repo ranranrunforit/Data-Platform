@@ -92,10 +92,6 @@ upload-bronze: ## Upload raw JSONL files from data/raw/ to MinIO bronze bucket
 
 pipeline: ## Run full batch pipeline (bronze → silver → GX → gold)
 	@echo "==> Step 1: Spark bronze → silver"
-	@echo "Staging Spark jobs into container..."
-	docker exec spark-master mkdir -p /tmp/spark-apps/jobs /tmp/spark-apps/utils
-	docker cp spark/jobs/. spark-master:/tmp/spark-apps/jobs/
-	docker cp spark/utils/. spark-master:/tmp/spark-apps/utils/
 	$(COMPOSE) exec spark-master /opt/spark/bin/spark-submit \
 		--master local[1] \
 		--driver-memory 1g \
@@ -109,7 +105,7 @@ pipeline: ## Run full batch pipeline (bronze → silver → GX → gold)
 		--conf spark.hadoop.fs.s3a.endpoint=http://minio:9000 \
 		--conf spark.hadoop.fs.s3a.path.style.access=true \
 		--conf spark.sql.maxConcurrentOutputFileWriters=1 \
-		/tmp/spark-apps/jobs/bronze_to_silver.py
+		/opt/spark-apps/jobs/bronze_to_silver.py
 	@echo "==> Step 2: GX quality gate"
 	$(MAKE) gx-validate
 	@echo "==> Step 3: dbt silver → gold"
