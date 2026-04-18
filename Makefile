@@ -97,8 +97,9 @@ pipeline: ## Run full batch pipeline (bronze → silver → GX → gold)
 	docker cp spark/jobs/. spark-master:/tmp/spark-apps/jobs/
 	docker cp spark/utils/. spark-master:/tmp/spark-apps/utils/
 	$(COMPOSE) exec spark-master /opt/spark/bin/spark-submit \
-		--master local[2] \
-		--driver-memory 1500m \
+		--master local[1] \
+		--driver-memory 1g \
+		--conf spark.driver.memoryOverhead=512m \
 		--packages $(shell grep SPARK_PACKAGES .env | cut -d= -f2) \
 		--conf spark.jars.ivy=/tmp/.ivy2 \
 		--conf spark.eventLog.enabled=false \
@@ -128,8 +129,8 @@ gx-validate: ## Run Great Expectations checkpoint against silver layer
 
 stream-start: ## Start Spark Structured Streaming consumer (Ctrl+C to stop)
 	$(COMPOSE) exec spark-master /opt/spark/bin/spark-submit \
-		--master local[2] \
-		--driver-memory 1500m \
+		--master local[1] \
+		--driver-memory 1g \
 		--packages io.delta:delta-spark_2.12:3.1.0,org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1,org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.12.262 \
 		--conf spark.jars.ivy=/tmp/.ivy2 \
 		--conf spark.eventLog.enabled=false \
