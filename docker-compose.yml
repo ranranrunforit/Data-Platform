@@ -52,6 +52,9 @@ x-airflow-common: &airflow-common
     DATA_BRONZE_PATH: s3a://bronze
     DATA_SILVER_PATH: s3a://silver
     DATA_GOLD_PATH: s3a://gold
+    # Required by Celery worker signal handling — moved from airflow-worker
+    # to airflow-common so the YAML merge doesn't wipe out the env block.
+    DUMB_INIT_SETSID: "0"
   volumes:
     - ./orchestration/dags:/opt/airflow/dags:ro
     - ./spark:/opt/spark-apps:ro
@@ -536,8 +539,6 @@ services:
       timeout: 15s
       retries: 5
       start_period: 30s
-    environment:
-      DUMB_INIT_SETSID: "0"    # required for Celery worker signal handling
     restart: always
     depends_on:
       airflow-init:
