@@ -546,8 +546,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "1.0"
-          memory: 1g
+          cpus: "2.0"
+          memory: 4g
 
   # Deferrable operator support (async sensors, etc.)
   airflow-triggerer:
