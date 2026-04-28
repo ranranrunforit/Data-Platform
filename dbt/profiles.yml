@@ -24,10 +24,13 @@ ai_data_platform:
           region: us-east-1
 
     # ── Production: same config, different path ───────────────────────────────
+    # threads: 1 — the DuckDB delta extension (delta_kernel-rs FFI) is not
+    # thread-safe; concurrent delta_scan calls cause malloc corruption and
+    # SIGABRT. Run models serially.
     prod:
       type: duckdb
       path: /tmp/ai_platform_prod.duckdb
-      threads: 8
+      threads: 1
       extensions:
         - httpfs
         - delta
