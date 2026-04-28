@@ -1,5 +1,6 @@
 .PHONY: help up down reset scale-workers generate ingest pipeline \
         dbt-run dbt-test gx-validate stream-start test lint ci \
+        kafka-init-topics \
         kafka-topics kafka-lag logs ps
 
 SHELL := /bin/bash
@@ -75,7 +76,7 @@ generate: ## Generate synthetic AI-infra telemetry → data/raw/
 	python3 data/generator/node_metrics.py
 	@echo "Done. Files in data/raw/"
 
-ingest: upload-bronze ## Publish historical data to Kafka and upload raw files to MinIO bronze
+ingest: kafka-init-topics upload-bronze ## Publish historical data to Kafka and upload raw files to MinIO bronze
 	@echo "Publishing job events..."
 	$(COMPOSE) run --rm airflow-worker \
 		python /opt/ingestion/kafka/producers/job_producer.py
@@ -130,7 +131,7 @@ gx-validate: ## Run Great Expectations checkpoint against silver layer
 	$(COMPOSE) exec airflow-worker \
 		python /opt/quality/checkpoints/silver_checkpoint.py
 
-stream-start: ## Start Spark Structured Streaming consumer (Ctrl+C to stop)
+stream-start: kafka-init-topics ## Start Spark Structured Streaming consumer (Ctrl+C to stop)
 	$(COMPOSE) exec spark-master /opt/spark/bin/spark-submit \
 		--master local[1] \
 		--driver-memory 1g \
@@ -174,3 +175,6 @@ lint: ## Lint Python with ruff
 # ── CI ─────────────────────────────────────────────────────────────────────────
 
 ci: lint test dbt-test gx-validate ## Run full local CI suite
+kafka-init-topics: ## Ensure Kafka topics exist
+	$(COMPOSE) up -d zookeeper kafka-1 kafka-2 kafka-3
+	$(COMPOSE) up --no-deps kafka-init
