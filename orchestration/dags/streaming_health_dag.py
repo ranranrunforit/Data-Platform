@@ -44,7 +44,10 @@ def check_kafka_lag(**context) -> None:
     from kafka import KafkaAdminClient
     import os
 
-    bootstrap = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:29092")
+    bootstrap = os.getenv(
+        "KAFKA_BOOTSTRAP_SERVERS",
+        "kafka-1:29092,kafka-2:29093,kafka-3:29094",
+    )
     max_lag = 10_000
 
     try:

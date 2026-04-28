@@ -380,6 +380,7 @@ services:
     environment:
       SPARK_MASTER_HOST: spark-master
       SPARK_MASTER_WEBUI_PORT: "8080"
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka-1:29092,kafka-2:29093,kafka-3:29094}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-minioadmin}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-minioadmin123}
     ports:
@@ -412,6 +413,7 @@ services:
     environment:
       SPARK_WORKER_MEMORY: 1G
       SPARK_WORKER_CORES: "1"
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka-1:29092,kafka-2:29093,kafka-3:29094}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-minioadmin}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-minioadmin123}
     depends_on:

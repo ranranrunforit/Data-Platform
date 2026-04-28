@@ -34,7 +34,10 @@ from pyspark.sql.types import (
 sys.path.insert(0, "/opt/spark-apps")
 from utils.delta_utils import get_spark_session
 
-BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:29092")
+BOOTSTRAP_SERVERS = os.getenv(
+    "KAFKA_BOOTSTRAP_SERVERS",
+    "kafka-1:29092,kafka-2:29093,kafka-3:29094",
+)
 KAFKA_TOPIC = "inference-api-logs"
 BRONZE_PATH = os.getenv("DATA_BRONZE_PATH", "s3a://bronze")
 CHECKPOINT_PATH = os.getenv("DATA_CHECKPOINT_PATH", "s3a://checkpoints")
