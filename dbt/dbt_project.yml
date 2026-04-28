@@ -31,8 +31,11 @@ vars:
   minio_endpoint: "http://minio:9000"
 
 # Create the MinIO SECRET on every dbt run. dbt-duckdb 1.7.4 ignores the
-# `secrets:` block in profiles.yml, but the DuckDB delta extension requires
-# a SECRET (it ignores `SET s3_*` settings). on-run-start runs once per
-# `dbt run`/`dbt test` and is wrapped in the adapter's connection.
+# `secrets:` block in profiles.yml, and the DuckDB delta extension requires
+# a SECRET (it ignores `SET s3_*` settings).
+#
+# `PERSISTENT` is required: dbt-duckdb opens a fresh connection per model
+# thread and a non-persistent SECRET would only live on the hook's
+# connection. Persistent secrets are stored in ~/.duckdb/stored_secrets/.
 on-run-start:
-  - "CREATE OR REPLACE SECRET minio (TYPE s3, KEY_ID 'minioadmin', SECRET 'minioadmin123', ENDPOINT 'minio:9000', URL_STYLE 'path', USE_SSL false, REGION 'us-east-1')"
+  - "CREATE OR REPLACE PERSISTENT SECRET minio (TYPE s3, KEY_ID 'minioadmin', SECRET 'minioadmin123', ENDPOINT 'minio:9000', URL_STYLE 'path', USE_SSL false, REGION 'us-east-1')"
