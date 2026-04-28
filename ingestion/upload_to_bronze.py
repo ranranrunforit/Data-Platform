@@ -41,6 +41,7 @@ UPLOADS = [
     (RAW_DIR / "job_events",     "job_events_*.jsonl",        "job_events"),
     (RAW_DIR / "job_events",     "job_completions_*.jsonl",   "job_completions"),
     (RAW_DIR / "inference_logs", "inference_logs_*.jsonl",    "inference_logs"),
+    (RAW_DIR / "node_metrics",   "node_metrics_*.csv",        "node_metrics"),
 ]
 
 total = 0

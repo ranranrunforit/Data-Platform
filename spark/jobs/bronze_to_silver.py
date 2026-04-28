@@ -89,6 +89,19 @@ INFERENCE_SCHEMA = StructType([
     StructField("timestamp",     TimestampType(), True),
 ])
 
+NODE_METRICS_SCHEMA = StructType([
+    StructField("timestamp",       TimestampType(), True),
+    StructField("node_id",         StringType(),    True),
+    StructField("gpu_id",          StringType(),    True),
+    StructField("gpu_index",       IntegerType(),   True),
+    StructField("gpu_type",        StringType(),    True),
+    StructField("rack_id",         StringType(),    True),
+    StructField("gpu_util_pct",    DoubleType(),    True),
+    StructField("memory_util_pct", DoubleType(),    True),
+    StructField("temp_celsius",    DoubleType(),    True),
+    StructField("power_watts",     DoubleType(),    True),
+])
+
 
 # ── Transformations ───────────────────────────────────────────────────────────
 
@@ -163,6 +176,26 @@ def transform_inference(spark: SparkSession) -> DataFrame:
         .withColumn("is_success", F.col("status_code") == 200)
         .withColumn("log_date", F.to_date(F.col("timestamp")))
         .withColumn("log_hour", F.hour(F.col("timestamp")))
+        .withColumn("_ingested_at", F.current_timestamp())
+    )
+
+
+def transform_node_metrics(spark: SparkSession) -> DataFrame:
+    """
+    Read raw GPU node utilization metrics (CSV) and partition by date.
+    Powers the gpu_utilization_hourly mart.
+    """
+    raw = (
+        spark.read
+        .schema(NODE_METRICS_SCHEMA)
+        .option("header", "true")
+        .csv(f"{BRONZE}/node_metrics/")
+    )
+
+    return (
+        raw
+        .dropDuplicates(["gpu_id", "timestamp"])
+        .withColumn("metric_date", F.to_date(F.col("timestamp")))
         .withColumn("_ingested_at", F.current_timestamp())
     )
 
@@ -269,6 +302,29 @@ def main():
             overwrite=True,
         )
         print(f"  Written to {SILVER}/inference (Delta)")
+
+        # ── Node metrics (time-series, append-only) ───────────────────────
+        print("Transforming node metrics...")
+        metrics_df = transform_node_metrics(spark)
+        metrics_count = metrics_df.count()
+        print(f"  {metrics_count:,} node metric records")
+
+        upsert_to_delta(
+            spark=spark,
+            source_df=metrics_df,
+            target_path=f"{SILVER}/node_metrics",
+            merge_condition="t.gpu_id = s.gpu_id AND t.timestamp = s.timestamp",
+            update_set={
+                "gpu_util_pct":    "s.gpu_util_pct",
+                "memory_util_pct": "s.memory_util_pct",
+                "temp_celsius":    "s.temp_celsius",
+                "power_watts":     "s.power_watts",
+                "_ingested_at":    "s._ingested_at",
+            },
+            partition_by=["metric_date"],
+            overwrite=True,
+        )
+        print(f"  Written to {SILVER}/node_metrics (Delta)")
 
         print(f"[{datetime.utcnow().isoformat()}] bronze → silver complete.")
 
