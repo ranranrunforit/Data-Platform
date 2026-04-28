@@ -19,7 +19,7 @@ WITH raw_metrics AS (
     SELECT
         CAST(timestamp AS TIMESTAMP)          AS metric_ts,
         DATE_TRUNC('hour', CAST(timestamp AS TIMESTAMP)) AS hour_bucket,
-        CAST(DATE(timestamp) AS DATE)         AS metric_date,
+        CAST(timestamp AS DATE)               AS metric_date,
         node_id,
         gpu_id,
         rack_id,

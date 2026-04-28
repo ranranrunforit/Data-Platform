@@ -62,10 +62,7 @@ daily_cost AS (
         ROUND(
             COUNT(*) FILTER (WHERE job_status = 'succeeded')::DOUBLE
             / NULLIF(COUNT(*) FILTER (WHERE job_status != 'running'), 0),
-        4)                                                 AS success_rate,
-
-        -- For incremental processing tracking
-        MAX(_ingested_at)                                  AS last_updated_at
+        4)                                                 AS success_rate
 
     FROM jobs
     GROUP BY
