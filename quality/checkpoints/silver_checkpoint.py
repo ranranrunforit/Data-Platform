@@ -34,12 +34,20 @@ def load_silver_jobs() -> pd.DataFrame:
     con = duckdb.connect()
     con.execute("INSTALL httpfs; LOAD httpfs;")
     con.execute("INSTALL delta;  LOAD delta;")
+    # The delta extension goes through delta_kernel-rs (object_store crate)
+    # which ignores DuckDB's `SET s3_*` settings — it only respects DuckDB
+    # SECRETS or AWS_* env vars. Use a SECRET so it works for both httpfs
+    # and the delta extension.
     con.execute(f"""
-        SET s3_endpoint='{MINIO_HOST}';
-        SET s3_access_key_id='{AWS_KEY}';
-        SET s3_secret_access_key='{AWS_SECRET}';
-        SET s3_use_ssl=false;
-        SET s3_url_style='path';
+        CREATE OR REPLACE SECRET minio (
+            TYPE s3,
+            KEY_ID '{AWS_KEY}',
+            SECRET '{AWS_SECRET}',
+            ENDPOINT '{MINIO_HOST}',
+            URL_STYLE 'path',
+            USE_SSL false,
+            REGION 'us-east-1'
+        );
     """)
     df = con.execute(f"""
         SELECT job_id, org_id, user_id, gpu_type, gpu_count,

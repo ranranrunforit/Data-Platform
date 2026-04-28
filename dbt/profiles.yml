@@ -2,7 +2,7 @@ ai_data_platform:
   target: dev
   outputs:
 
-    # ── Local dev: DuckDB reads Delta files from local volume ─────────────────
+    # ── Local dev: DuckDB reads Delta files from MinIO via S3 SECRET ─────────
     dev:
       type: duckdb
       path: /tmp/ai_platform_dev.duckdb
@@ -10,12 +10,18 @@ ai_data_platform:
       extensions:
         - httpfs
         - delta
-      settings:
-        s3_endpoint: "minio:9000"
-        s3_access_key_id: "minioadmin"
-        s3_secret_access_key: "minioadmin123"
-        s3_use_ssl: false
-        s3_url_style: path
+      # The delta extension uses delta_kernel-rs which ignores DuckDB's
+      # `SET s3_*` settings — it only respects DuckDB SECRETS. Define the
+      # SECRET here so both httpfs and the delta extension see MinIO.
+      secrets:
+        - type: s3
+          name: minio
+          key_id: minioadmin
+          secret: minioadmin123
+          endpoint: minio:9000
+          url_style: path
+          use_ssl: false
+          region: us-east-1
 
     # ── Production: same config, different path ───────────────────────────────
     prod:
@@ -25,12 +31,15 @@ ai_data_platform:
       extensions:
         - httpfs
         - delta
-      settings:
-        s3_endpoint: "minio:9000"
-        s3_access_key_id: "minioadmin"
-        s3_secret_access_key: "minioadmin123"
-        s3_use_ssl: false
-        s3_url_style: path
+      secrets:
+        - type: s3
+          name: minio
+          key_id: minioadmin
+          secret: minioadmin123
+          endpoint: minio:9000
+          url_style: path
+          use_ssl: false
+          region: us-east-1
 
     # ── CI: in-memory DuckDB with local test fixtures ─────────────────────────
     ci:
