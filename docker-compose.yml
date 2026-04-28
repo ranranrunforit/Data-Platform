@@ -50,7 +50,7 @@ x-airflow-common: &airflow-common
   volumes:
     - ./orchestration/dags:/opt/airflow/dags:ro
     - ./spark:/opt/spark-apps:ro
-    - ./dbt:/opt/dbt:ro
+    - ./dbt:/opt/dbt
     - ./quality:/opt/quality:ro
     - ./ingestion:/opt/ingestion:ro
     - ./data:/opt/data:ro
@@ -222,7 +222,7 @@ services:
       resources:
         limits:
           cpus: "1.0"
-          memory: 1536m
+          memory: 1g
 
   kafka-2:
     image: confluentinc/cp-kafka:7.5.3
@@ -265,7 +265,7 @@ services:
       resources:
         limits:
           cpus: "1.0"
-          memory: 1536m
+          memory: 1g
 
   kafka-3:
     image: confluentinc/cp-kafka:7.5.3
@@ -308,7 +308,7 @@ services:
       resources:
         limits:
           cpus: "1.0"
-          memory: 1536m
+          memory: 1g
 
   # Creates topics with correct RF=3 and partition counts
   kafka-init:
@@ -392,7 +392,7 @@ services:
       resources:
         limits:
           cpus: "2.0"
-          memory: 6g
+          memory: 2500m
 
   # No container_name here — required for --scale to work.
   # Default: 2 workers started by `make up`. Scale with: make scale-spark N=4
@@ -540,8 +540,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "2.0"
-          memory: 2g
+          cpus: "1.0"
+          memory: 1g
 
   # Deferrable operator support (async sensors, etc.)
   airflow-triggerer:

@@ -1,13 +1,12 @@
 """
 Great Expectations checkpoint for the Silver layer.
 
-Called by the Airflow DAG between the Spark Silver write and the dbt Gold run.
-If ANY critical expectation fails, this script exits with code 1,
-which causes the Airflow task to fail and blocks Gold promotion.
+Loads silver/jobs from MinIO via DuckDB's delta extension, then runs the
+silver_jobs suite against an in-memory ephemeral GX context. No project
+files needed — fits the read-only `/opt/quality` mount.
 
-Usage:
-    python quality/checkpoints/silver_checkpoint.py
-    # Exit 0 = passed, exit 1 = failed (Airflow marks task as failed)
+Exit 0 = passed, exit 1 = failed (Airflow marks the task as failed,
+blocking Gold promotion in the batch DAG).
 """
 
 import os
@@ -18,100 +17,76 @@ import great_expectations as gx
 import pandas as pd
 
 sys.path.insert(0, "/opt/quality")
-from expectations.suite_silver_jobs import build_context, define_silver_jobs_suite
+from expectations.suite_silver_jobs import apply_silver_jobs_expectations
 
-SILVER_PATH = os.getenv("DATA_SILVER_PATH", "s3a://silver")
-MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "http://minio:9000").replace("http://", "")
+# DuckDB's httpfs uses host:port (no scheme); s3:// path form (not s3a://)
+SILVER_PATH = os.getenv("DATA_SILVER_PATH", "s3a://silver").replace("s3a://", "s3://")
+MINIO_HOST = (
+    os.getenv("MINIO_ENDPOINT", "http://minio:9000")
+    .replace("http://", "")
+    .replace("https://", "")
+)
 AWS_KEY = os.getenv("AWS_ACCESS_KEY_ID", "minioadmin")
 AWS_SECRET = os.getenv("AWS_SECRET_ACCESS_KEY", "minioadmin123")
 
 
-def load_silver_jobs_sample() -> pd.DataFrame:
-    """
-    Load the silver jobs table into a Pandas DataFrame via DuckDB.
-    DuckDB reads Delta files directly — no Spark needed for validation.
-    """
+def load_silver_jobs() -> pd.DataFrame:
     con = duckdb.connect()
-    con.execute("INSTALL delta; LOAD delta;")
     con.execute("INSTALL httpfs; LOAD httpfs;")
+    con.execute("INSTALL delta;  LOAD delta;")
     con.execute(f"""
-        SET s3_endpoint='{MINIO_ENDPOINT}';
+        SET s3_endpoint='{MINIO_HOST}';
         SET s3_access_key_id='{AWS_KEY}';
         SET s3_secret_access_key='{AWS_SECRET}';
         SET s3_use_ssl=false;
         SET s3_url_style='path';
     """)
-
     df = con.execute(f"""
-        SELECT
-            job_id, org_id, user_id, gpu_type, gpu_count,
-            framework, model_arch, started_at, ended_at,
-            cost_usd, exit_code, is_success, is_late_arrival
+        SELECT job_id, org_id, user_id, gpu_type, gpu_count,
+               framework, model_arch, started_at, ended_at,
+               cost_usd, exit_code, is_success, is_late_arrival
         FROM delta_scan('{SILVER_PATH}/jobs')
         LIMIT 100000
     """).df()
-
     con.close()
-    print(f"Loaded {len(df):,} rows from {SILVER_PATH}/jobs for GX validation.")
+    print(f"Loaded {len(df):,} rows from {SILVER_PATH}/jobs")
     return df
 
 
-def run_checkpoint() -> bool:
-    """
-    Runs the silver_jobs GX suite against a sample of the Silver table.
-    Returns True if all CRITICAL expectations pass, False otherwise.
-    """
-    context = build_context()
-    define_silver_jobs_suite(context)
+def main() -> int:
+    df = load_silver_jobs()
 
-    df = load_silver_jobs_sample()
-
-    # Use PandasDataset validator (simple, no Spark needed for validation)
+    context = gx.get_context()  # ephemeral, in-memory
+    asset = (
+        context.sources.add_pandas("silver_pandas")
+        .add_dataframe_asset("silver_jobs")
+    )
+    suite = context.add_or_update_expectation_suite("silver_jobs.warning")
     validator = context.get_validator(
-        batch_request=gx.core.batch.RuntimeBatchRequest(
-            datasource_name="silver_pandas",
-            data_connector_name="runtime_data_connector",
-            data_asset_name="silver_jobs",
-            runtime_parameters={"batch_data": df},
-            batch_identifiers={"run_id": "airflow_batch"},
-        ),
-        expectation_suite_name="silver_jobs.warning",
+        batch_request=asset.build_batch_request(dataframe=df),
+        expectation_suite=suite,
     )
 
+    apply_silver_jobs_expectations(validator)
     results = validator.validate()
-    success = results.success
-
-    # ── Print summary ─────────────────────────────────────────────────────
-    print("\n" + "=" * 60)
-    print(f"GX Validation Result: {'PASSED' if success else 'FAILED'}")
-    print("=" * 60)
 
     passed = sum(1 for r in results.results if r.success)
     failed = sum(1 for r in results.results if not r.success)
-    print(f"  Expectations: {passed} passed, {failed} failed")
+    print("\n" + "=" * 60)
+    print(f"GX: {passed} passed, {failed} failed — {'PASS' if results.success else 'FAIL'}")
+    print("=" * 60)
 
-    if not success:
-        print("\nFailed expectations:")
+    if not results.success:
         for r in results.results:
             if not r.success:
                 print(f"  FAIL  {r.expectation_config.expectation_type}")
-                print(f"        {r.result}")
-
-    # Save Data Docs (human-readable HTML report)
-    context.build_data_docs()
-    print(f"\nData Docs: {os.path.join('/opt/quality', 'uncommitted/data_docs/local_site/index.html')}")
-
-    return success
-
-
-def main():
-    passed = run_checkpoint()
-    if not passed:
+                print(f"        {dict(r.result)}")
         print("\nBlocking Gold promotion: Silver quality check failed.")
-        sys.exit(1)
-    print("\nSilver quality check passed. Proceeding to Gold.")
-    sys.exit(0)
+        return 1
+
+    print("\nSilver quality check passed.")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

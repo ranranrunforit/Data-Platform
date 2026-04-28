@@ -102,7 +102,7 @@ jobs:
           import sys
           sys.path.insert(0, 'quality')
           # Importing the suite module validates Python syntax
-          from expectations.suite_silver_jobs import define_silver_jobs_suite
+          from expectations.suite_silver_jobs import apply_silver_jobs_expectations
           print('GX suite syntax OK')
           "
 

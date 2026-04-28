@@ -100,23 +100,29 @@ pipeline: ## Run full batch pipeline (bronze → silver → GX → gold)
 		--conf spark.jars.ivy=/tmp/.ivy2 \
 		--conf spark.eventLog.enabled=false \
 		--conf spark.sql.shuffle.partitions=4 \
+		--conf spark.executor.heartbeatInterval=60s \
+		--conf spark.network.timeout=120s \
 		--conf spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension \
 		--conf spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog \
 		--conf spark.hadoop.fs.s3a.endpoint=http://minio:9000 \
 		--conf spark.hadoop.fs.s3a.path.style.access=true \
 		--conf spark.sql.maxConcurrentOutputFileWriters=1 \
-		/tmp/spark-apps/jobs/bronze_to_silver.py
+		/opt/spark-apps/jobs/bronze_to_silver.py
 	@echo "==> Step 2: GX quality gate"
 	$(MAKE) gx-validate
 	@echo "==> Step 3: dbt silver → gold"
 	$(MAKE) dbt-run
 	@echo "Pipeline complete."
 
-dbt-run: ## Run dbt models
+dbt-deps: ## Fetch dbt package dependencies (idempotent)
+	$(COMPOSE) exec airflow-worker \
+		dbt deps --project-dir /opt/dbt
+
+dbt-run: dbt-deps ## Run dbt models
 	$(COMPOSE) exec airflow-worker \
 		dbt run --project-dir /opt/dbt --profiles-dir /opt/dbt --target prod
 
-dbt-test: ## Run dbt tests
+dbt-test: dbt-deps ## Run dbt tests
 	$(COMPOSE) exec airflow-worker \
 		dbt test --project-dir /opt/dbt --profiles-dir /opt/dbt --target prod
 
@@ -131,6 +137,8 @@ stream-start: ## Start Spark Structured Streaming consumer (Ctrl+C to stop)
 		--packages io.delta:delta-spark_2.12:3.1.0,org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1,org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.12.262 \
 		--conf spark.jars.ivy=/tmp/.ivy2 \
 		--conf spark.eventLog.enabled=false \
+		--conf spark.executor.heartbeatInterval=60s \
+		--conf spark.network.timeout=120s \
 		--conf spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension \
 		--conf spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog \
 		--conf spark.hadoop.fs.s3a.endpoint=http://minio:9000 \
