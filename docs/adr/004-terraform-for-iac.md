@@ -1,7 +1,7 @@
 # ADR-004: Terraform for Infrastructure as Code
 
-**Status:** Accepted
-**Date:** 2024-01-17
+**Status:** Accepted  
+**Date:** 2026-01-17  
 **Deciders:** Data Engineering
 
 ---
