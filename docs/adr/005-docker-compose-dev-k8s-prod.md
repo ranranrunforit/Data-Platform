@@ -1,8 +1,8 @@
 # ADR-005: Docker Compose for Development, Kubernetes for Production
 
-**Status:** Accepted
-**Date:** 2026-01-18
-**Deciders:** Data Engineering
+**Status:** Accepted  
+**Date:** 2026-01-18  
+**Deciders:** Data Engineering  
 
 ---
 
