@@ -1,8 +1,8 @@
 # ADR-003: Apache Spark (PySpark) for Distributed Processing
 
-**Status:** Accepted
-**Date:** 2024-01-16
-**Deciders:** Data Engineering
+**Status:** Accepted 
+**Date:** 2026-01-16 
+**Deciders:** Data Engineering 
 
 ---
 
