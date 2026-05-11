@@ -1,6 +1,6 @@
 # AI Infrastructure Data Platform
 
-End-to-end **batch + streaming lakehouse** for AI compute telemetry - the kind of internal tooling a GPU cloud provider (CoreWeave, Lambda Labs, Together AI) runs to track utilisation, cost, and inference SLOs across a fleet of GPUs.
+End-to-end **batch + streaming lakehouse** for AI compute telemetry runs to track utilisation, cost, and inference SLOs across a fleet of GPUs.
 
 The platform ingests synthetic but realistic telemetry from a 96-node cluster, lands it in a medallion (Bronze / Silver / Gold) Delta Lake on object storage, gates promotion on automated data-quality checks, exposes business-ready marts via dbt, and serves analytics through a FastAPI + DuckDB layer - all orchestrated by Airflow with horizontally-scalable Celery workers.
 
