@@ -230,10 +230,10 @@ make reset
 
 ## What to read next
 
-- [architecture.md](architecture.md) — full system design and storage layout
-- [DATA-MODEL.md](DATA-MODEL.md) — every column in every table
-- [API.md](API.md) — REST endpoint reference
-- [COST-MODEL.md](COST-MODEL.md) — billing logic
-- [GOVERNANCE.md](GOVERNANCE.md) — quality, lineage, ownership
-- [SECURITY.md](SECURITY.md) — what's missing for production
-- [DEPLOYMENT.md](DEPLOYMENT.md) — moving off Docker Compose
+- [ARCHITECTURE.md](architecture/ARCHITECTURE.md) — full system design and storage layout
+- [DATA-MODEL.md](architecture/DATA-MODEL.md) — every column in every table
+- [API.md](architecture/API.md) — REST endpoint reference
+- [COST-MODEL.md](business/COST-MODEL.md) — billing logic
+- [GOVERNANCE.md](governance/GOVERNANCE.md) — quality, lineage, ownership
+- [SECURITY.md](governance/SECURITY.md) — what's missing for production
+- [DEPLOYMENT.md](operations/DEPLOYMENT.md) — moving off Docker Compose
