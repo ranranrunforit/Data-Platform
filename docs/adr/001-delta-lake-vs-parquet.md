@@ -1,7 +1,7 @@
 # ADR-001: Delta Lake over Plain Parquet
 
 **Status:** Accepted  
-**Date:** 2024-01-15  
+**Date:** 2026-01-15  
 **Deciders:** Data Engineering
 
 ---
