@@ -257,9 +257,9 @@ Phase 1 is complete when:
 - [x] Risk register with score + status
 - [x] Traceability matrix complete with validation evidence
 - [x] Out-of-scope explicitly listed in [REQUIREMENTS.md § Out of scope](../../REQUIREMENTS.md)
-- [x] Reviewed with CTO + VP Eng (pending)
-- [x] Sign-off from CISO on security scope (pending)
-- [x] Sign-off from CFO on cost envelope (pending)
+- [ ] Reviewed with CTO + VP Eng (pending)
+- [ ] Sign-off from CISO on security scope (pending)
+- [ ] Sign-off from CFO on cost envelope (pending)
 
 ---
 
