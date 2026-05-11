@@ -88,7 +88,7 @@ flowchart LR
 - `streaming_health_check` (every 15 min): Kafka lag + Delta freshness + SLO compliance
 - Workers scale horizontally: `make scale-workers N=4`
 
-See [docs/architecture.md](docs/architecture.md) for the full storage layout, table list, and component diagram.
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full storage layout, table list, and component diagram.
 
 ---
 
