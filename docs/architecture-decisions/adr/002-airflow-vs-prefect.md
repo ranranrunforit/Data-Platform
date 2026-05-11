@@ -10,7 +10,7 @@
 
 The pipeline requires an orchestrator that can:
 1. Schedule the daily batch job with retry logic and alerting.
-2. Run the 15-minute streaming health check with branching (SLO breach → alert path).
+2. Run the 15-minute streaming health check with branching (SLO breach - alert path).
 3. Submit Spark jobs to the standalone cluster via `SparkSubmitOperator`.
 4. Be widely understood by future team members without a learning curve.
 

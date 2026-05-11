@@ -1,6 +1,6 @@
 # Deployment Guide
 
-How to run the platform â€?locally, in Codespaces, on a free-tier cloud VM, or productionised on managed cloud services.
+How to run the platform - locally, in Codespaces, on a free-tier cloud VM, or productionised on managed cloud services.
 
 ---
 
@@ -10,13 +10,13 @@ How to run the platform â€?locally, in Codespaces, on a free-tier cloud VM, or p
 
 ```bash
 make up        # build images, start everything, scale workers to 2
-make generate  # synthetic data â†?data/raw/
+make generate  # synthetic data - data/raw/
 make ingest    # publish to Kafka + upload to MinIO bronze
 make pipeline  # run batch pipeline manually (also runs daily at 01:00 UTC via Airflow)
 ```
 
 `make up` performs first-time setup automatically:
-- Copies `.env.example` â†?`.env` if missing
+- Copies `.env.example` - `.env` if missing
 - Generates an Airflow Fernet key and webserver secret if placeholders remain
 - Starts 2 Celery workers and 2 Spark workers
 - Prints UI URLs
@@ -56,10 +56,10 @@ make reset              # destroy everything including volumes (DESTRUCTIVE)
 ### Streaming demo
 
 ```bash
-# Terminal 1 â€?Kafka â†?Delta consumer
+# Terminal 1 - Kafka - Delta consumer
 make stream-start
 
-# Terminal 2 â€?synthetic 100 req/s producer
+# Terminal 2 - synthetic 100 req/s producer
 make stream-live
 ```
 
@@ -71,12 +71,12 @@ The `streaming_health_check` Airflow DAG polls Kafka lag, Delta freshness, and S
 
 [.devcontainer/devcontainer.json](../../.devcontainer/devcontainer.json) declares a 16 GB Codespace with all service ports forwarded. Workflow:
 
-1. Fork the repo (or open the original) â†?"Code" â†?"Open in Codespace".
+1. Fork the repo (or open the original) - "Code" - "Open in Codespace".
 2. Wait for the container to build (~2 min).
 3. `make up && make generate && make ingest && make pipeline`.
 4. Click the forwarded port toasts to reach Airflow / API / MinIO UIs in the browser.
 
-This is the path of least resistance for demos â€?zero local install, public-URL forwarding for sharing.
+This is the path of least resistance for demos - zero local install, public-URL forwarding for sharing.
 
 ---
 
@@ -110,14 +110,14 @@ Compose is for development. Production swaps each component for a managed equiva
 | FastAPI on Compose | ECS Fargate / Cloud Run / GKE |
 | MinIO admin password in `.env` | AWS Secrets Manager / GCP Secret Manager / Vault |
 
-### Storage swap (MinIO â†?S3)
+### Storage swap (MinIO - S3)
 
-Spark and DuckDB reach storage through environment variables â€?there is no code change required. Update `.env`:
+Spark and DuckDB reach storage through environment variables - there is no code change required. Update `.env`:
 
 ```dotenv
 AWS_ACCESS_KEY_ID=AKIA...
 AWS_SECRET_ACCESS_KEY=...
-MINIO_ENDPOINT=               # blank â†?use default AWS endpoint
+MINIO_ENDPOINT=               # blank - use default AWS endpoint
 DATA_BRONZE_PATH=s3a://your-bronze-bucket
 DATA_SILVER_PATH=s3a://your-silver-bucket
 DATA_GOLD_PATH=s3a://your-gold-bucket
@@ -126,18 +126,18 @@ DATA_CHECKPOINT_PATH=s3a://your-checkpoints-bucket
 
 Remove the `spark.hadoop.fs.s3a.endpoint=http://minio:9000` and `path.style.access=true` configs from `bronze_to_silver.py` Spark submit args (or override via env). The S3A filesystem will pick up AWS credentials from the standard chain.
 
-The Terraform in [infrastructure/terraform/](../../infrastructure/terraform/) currently uses the `aminueza/minio` provider. To target real S3, swap it for the official `hashicorp/aws` provider â€?the bucket resource shape is the same.
+The Terraform in [infrastructure/terraform/](../../infrastructure/terraform/) currently uses the `aminueza/minio` provider. To target real S3, swap it for the official `hashicorp/aws` provider - the bucket resource shape is the same.
 
 ### Airflow on Kubernetes
 
 Replace CeleryExecutor with KubernetesExecutor and run Airflow on a managed K8s cluster:
-- Each task spawns a pod with its own resource request â€?no Celery worker pool to size.
+- Each task spawns a pod with its own resource request - no Celery worker pool to size.
 - `SparkSubmitOperator` becomes `SparkKubernetesOperator` (spark-on-k8s-operator).
 - Airflow metadata stays in RDS; logs ship to CloudWatch / Stackdriver via the `remote_logging` config.
 
 ### Spark on K8s / EMR
 
-The PySpark jobs in [spark/jobs/](../../spark/jobs/) need no changes â€?only the `--master` argument shifts. `delta-spark`, `hadoop-aws`, and `aws-java-sdk-bundle` are passed via `--packages` either way.
+The PySpark jobs in [spark/jobs/](../../spark/jobs/) need no changes - only the `--master` argument shifts. `delta-spark`, `hadoop-aws`, and `aws-java-sdk-bundle` are passed via `--packages` either way.
 
 For EMR Serverless, package the jobs into a wheel + uber-jar and submit via `aws emr-serverless start-job-run`. Spark's S3A filesystem already does the right thing without `spark.hadoop.fs.s3a.endpoint` overrides.
 
@@ -163,7 +163,7 @@ dbt-duckdb's single-thread limitation in prod (DuckDB's `delta` extension is not
 | `gx-suite-syntax` | Imports the GX suite to catch syntax issues |
 | `docker-build` | Builds the API and Airflow images |
 
-A sixth job â€?`integration` â€?runs only on push to `main`, brings up MinIO + a single Kafka broker via `docker compose`, and runs a smoke test.
+A sixth job - `integration` - runs only on push to `main`, brings up MinIO + a single Kafka broker via `docker compose`, and runs a smoke test.
 
 ---
 
@@ -178,4 +178,4 @@ A sixth job â€?`integration` â€?runs only on push to `main`, brings up MinIO + a
 | MinIO Console | :9001 | Bucket browser, object versions, lifecycle policies |
 | FastAPI Swagger | :8000/docs | Interactive endpoint docs |
 
-There is no Prometheus / Grafana stack wired in â€?that is the natural next addition for production. MinIO exposes `MINIO_PROMETHEUS_AUTH_TYPE=public` so a sidecar Prometheus could scrape it without authentication.
+There is no Prometheus / Grafana stack wired in - that is the natural next addition for production. MinIO exposes `MINIO_PROMETHEUS_AUTH_TYPE=public` so a sidecar Prometheus could scrape it without authentication.

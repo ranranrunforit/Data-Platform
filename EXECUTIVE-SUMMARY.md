@@ -1,10 +1,10 @@
-# Project 304: Data Platform for AI — Executive Summary
+# Project 304: Data Platform for AI - Executive Summary
 
 **Duration**: 85 hours · **Complexity**: Very High · **Project**: project-304-data-platform
 
 ## One-line pitch
 
-A unified **lakehouse data platform** for **TechCorp's** GPU cloud — replacing 3 disconnected telemetry stores and a 5-day manual billing close with **automated batch + streaming pipelines, quality-gated promotion, and self-serve REST APIs**.
+A unified **lakehouse data platform** for **TechCorp's** GPU cloud - replacing 3 disconnected telemetry stores and a 5-day manual billing close with **automated batch + streaming pipelines, quality-gated promotion, and self-serve REST APIs**.
 
 ## The problem
 
@@ -20,25 +20,24 @@ A unified **lakehouse data platform** for **TechCorp's** GPU cloud — replacing
 
 | Capability | Implementation | Outcome |
 |---|---|---|
-| **100K+ events/day batch** | Spark + Delta Lake medallion (Bronze → Silver → Gold) | One queryable surface for cost & utilisation |
+| **100K+ events/day batch** | Spark + Delta Lake medallion (Bronze - Silver - Gold) | One queryable surface for cost & utilisation |
 | **100 req/s streaming** | Spark Structured Streaming + Kafka, 30 s micro-batches, exactly-once | < 60 s end-to-end lag on inference SLO |
 | **99.9% data quality** | Great Expectations gate + dbt tests + custom singular tests | Bad data **provably** blocked from Gold |
-| **50% reduction in DE time** | Self-serve REST API + dbt + DuckDB | 4 days → 5 min time-to-first-insight |
+| **50% reduction in DE time** | Self-serve REST API + dbt + DuckDB | 4 days - 5 min time-to-first-insight |
 | **End-to-end lineage** | dbt DAG + Delta time-travel + manual trace | GDPR Art. 30 + SOC 2 Processing Integrity ready |
 
 ## Business value
 
-- **Productivity** — Data scientists self-serve via `/cost/*`, `/sla/*`, `/utilization/*` endpoints; no more DE ticket queue.
-- **Quality** — 9-expectation GX checkpoint runs between Silver and Gold; failed checks branch the DAG away from `dbt run` and Gold is **not** written.
-- **Compliance** — Complete lineage trace + Delta 7-day time travel + structural readiness for SOC 2 Type II and GDPR Art. 30.
-- **Cost** — Lakehouse pattern projected ~60% cheaper than the alternative (separate lake + warehouse) at TechCorp scale.
+- **Productivity** - Data scientists self-serve via `/cost/*`, `/sla/*`, `/utilization/*` endpoints; no more DE ticket queue.
+- **Quality** - 9-expectation GX checkpoint runs between Silver and Gold; failed checks branch the DAG away from `dbt run` and Gold is **not** written.
+- **Compliance** - Complete lineage trace + Delta 7-day time travel + structural readiness for SOC 2 Type II and GDPR Art. 30.
+- **Cost** - Lakehouse pattern projected ~60% cheaper than the alternative (separate lake + warehouse) at TechCorp scale.
 
 ## Architecture at a glance
 
 ```
-Kafka (RF=3) ──┐
-               ├─→ Bronze ──→ Silver ──→ GX gate ──→ Gold ──→ FastAPI
-batch CSV ─────┘  (MinIO/   (Delta    (block on    (dbt +    (/cost
+Kafka (RF=3) ── -                ├─ - Bronze ── - Silver ── - GX gate ── - Gold ── - FastAPI
+batch CSV ───── -  (MinIO/   (Delta    (block on    (dbt +    (/cost
                   Delta)    Lake +    failure)    DuckDB)    /sla
                             MERGE)                            /utilization)
                                        Airflow CeleryExecutor orchestrates
@@ -51,9 +50,9 @@ batch CSV ─────┘  (MinIO/   (Delta    (block on    (dbt +    (/cost
 | **Lakehouse format** | **Delta Lake** | ACID + MERGE for late-arriving events; native DuckDB reads; widest enterprise adoption ([ADR-001](docs/architecture-decisions/adr/001-delta-lake-vs-parquet.md)) |
 | **Streaming platform** | **Kafka** + Spark Structured Streaming | Battle-tested durability (RF=3, min.isr=2); 30 s micro-batch fits SLA; exactly-once via offsets + Delta tx log ([ADR-003](docs/architecture-decisions/adr/003-pyspark-vs-alternatives.md)) |
 | **Orchestration** | **Airflow** CeleryExecutor | `SparkSubmitOperator` ecosystem; horizontal worker scaling ([ADR-002](docs/architecture-decisions/adr/002-airflow-vs-prefect.md)) |
-| **Governance** | 3-checkpoint quality gate (Bronze schema-on-read → Silver GX gate → Gold dbt tests) | Bad data fails closed before billing ([GOVERNANCE.md](docs/governance/GOVERNANCE.md)) |
+| **Governance** | 3-checkpoint quality gate (Bronze schema-on-read - Silver GX gate - Gold dbt tests) | Bad data fails closed before billing ([GOVERNANCE.md](docs/governance/GOVERNANCE.md)) |
 | **IaC** | **Terraform** (same .tf for MinIO + S3) | Bucket policies + lifecycle as code ([ADR-004](docs/architecture-decisions/adr/004-terraform-for-iac.md)) |
-| **Dev → Prod** | **Docker Compose** locally, **Kubernetes** in prod | Same images both targets; no re-architecture for migration ([ADR-005](docs/architecture-decisions/adr/005-docker-compose-dev-k8s-prod.md)) |
+| **Dev - Prod** | **Docker Compose** locally, **Kubernetes** in prod | Same images both targets; no re-architecture for migration ([ADR-005](docs/architecture-decisions/adr/005-docker-compose-dev-k8s-prod.md)) |
 
 ## Investment & ROI
 

@@ -8,10 +8,10 @@
 
 ## Context
 
-The Bronze ‚Ü?Silver layer must:
+The Bronze - Silver layer must:
 
 1. Read JSONL / CSV from object storage and apply schema enforcement at TB scale.
-2. Deduplicate on a primary key idempotently ‚Ä?re-runs must not create duplicate rows.
+2. Deduplicate on a primary key idempotently - re-runs must not create duplicate rows.
 3. Run a `MERGE` (upsert) of late-arriving job-completion events into an existing Delta table.
 4. Run as both a daily batch job and a 30-second-micro-batch streaming job, ideally with the same engine and the same code patterns.
 5. Submit cleanly from Airflow via a managed operator.
@@ -22,12 +22,12 @@ Single-node tools (pandas, Polars, DuckDB) cover the small-scale case but do not
 
 | Engine | Distributed | Delta MERGE | Streaming | Airflow operator | Skill availability |
 |---|---|---|---|---|---|
-| **Apache Spark (PySpark)** | ‚ú?| ‚ú?native via `delta-spark` | ‚ú?Structured Streaming | ‚ú?`SparkSubmitOperator` | Highest in DE market |
-| Apache Flink | ‚ú?| ‚ú?via Iceberg sink | ‚ú?true event-streaming | ‚ö†Ô∏è via Beam runner | Lower; learning curve |
-| Apache Beam | ‚ú?(multi-runner) | ‚ö†Ô∏è via Iceberg connector | ‚ú?| ‚ö†Ô∏è wrapper needed | Niche |
-| Dask | ‚ú?| ‚ù?no Delta MERGE | ‚ö†Ô∏è Streamz, immature | ‚ö†Ô∏è no first-class operator | Smaller ecosystem |
-| Ray Data | ‚ú?| ‚ù?no Delta MERGE | ‚ö†Ô∏è early | ‚ö†Ô∏è custom | Emerging |
-| Single-node (Polars / DuckDB) | ‚ù?| ‚ú?DuckDB only | ‚ù?| n/a | Limits scale |
+| **Apache Spark (PySpark)** | - | - native via `delta-spark` | - Structured Streaming | - `SparkSubmitOperator` | Highest in DE market |
+| Apache Flink | - | - via Iceberg sink | - true event-streaming | ‚ö†Ô∏è via Beam runner | Lower; learning curve |
+| Apache Beam | - (multi-runner) | ‚ö†Ô∏è via Iceberg connector | - | ‚ö†Ô∏è wrapper needed | Niche |
+| Dask | - | - no Delta MERGE | ‚ö†Ô∏è Streamz, immature | ‚ö†Ô∏è no first-class operator | Smaller ecosystem |
+| Ray Data | - | - no Delta MERGE | ‚ö†Ô∏è early | ‚ö†Ô∏è custom | Emerging |
+| Single-node (Polars / DuckDB) | - | - DuckDB only | - | n/a | Limits scale |
 
 ## Decision
 
@@ -35,7 +35,7 @@ Single-node tools (pandas, Polars, DuckDB) cover the small-scale case but do not
 
 ### Why Spark over Flink
 
-Flink is technically the better pure-streaming engine ‚Ä?true per-record processing, lower watermarking latency, more sophisticated state management. The platform does not need any of that:
+Flink is technically the better pure-streaming engine - true per-record processing, lower watermarking latency, more sophisticated state management. The platform does not need any of that:
 
 - The streaming SLA is "30-second freshness for inference dashboards", not sub-second alerting.
 - Spark Structured Streaming's micro-batch model (`processingTime="30 seconds"`) hits this comfortably.
@@ -55,10 +55,10 @@ Code lives next to the rest of the Python codebase (generators, FastAPI, Airflow
 | File | Pattern |
 |---|---|
 | [spark/jobs/bronze_to_silver.py](../../../spark/jobs/bronze_to_silver.py) | Daily batch: schema enforcement, dedup, enrichment, Delta `MERGE` for late completions |
-| [spark/jobs/streaming_consumer.py](../../../spark/jobs/streaming_consumer.py) | Spark Structured Streaming: Kafka ‚Ü?Delta with 30 s micro-batches, `maxOffsetsPerTrigger=10000` back-pressure, 10-minute watermark |
-| [spark/jobs/optimize_tables.py](../../../spark/jobs/optimize_tables.py) | Nightly `OPTIMIZE ‚Ä?ZORDER BY` and `VACUUM RETAIN 168 HOURS` |
-| [spark/utils/delta_utils.py](../../../spark/utils/delta_utils.py) | Shared SparkSession builder pre-configured for Delta + S3A ‚Ü?MinIO; reusable `upsert_to_delta()` helper |
-| [tests/unit/test_transformations.py](../../../tests/unit/test_transformations.py) | Unit tests run in `local[2]` mode ‚Ä?no cluster needed in CI |
+| [spark/jobs/streaming_consumer.py](../../../spark/jobs/streaming_consumer.py) | Spark Structured Streaming: Kafka - Delta with 30 s micro-batches, `maxOffsetsPerTrigger=10000` back-pressure, 10-minute watermark |
+| [spark/jobs/optimize_tables.py](../../../spark/jobs/optimize_tables.py) | Nightly `OPTIMIZE - ZORDER BY` and `VACUUM RETAIN 168 HOURS` |
+| [spark/utils/delta_utils.py](../../../spark/utils/delta_utils.py) | Shared SparkSession builder pre-configured for Delta + S3A - MinIO; reusable `upsert_to_delta()` helper |
+| [tests/unit/test_transformations.py](../../../tests/unit/test_transformations.py) | Unit tests run in `local[2]` mode - no cluster needed in CI |
 | [orchestration/dags/batch_pipeline_dag.py](../../../orchestration/dags/batch_pipeline_dag.py) | `SparkSubmitOperator` submits to `spark://spark-master:7077` |
 
 Cluster topology (development): one Spark master + 2 standalone workers via [Dockerfile.spark](../../../Dockerfile.spark), 1 GB / 1 core each. Scaled with `make scale-spark N=4`.
@@ -67,8 +67,8 @@ Production: same code targets EMR Serverless / Databricks Jobs / Spark on K8s by
 
 ## Consequences
 
-- Same engine spans batch and streaming ‚Ä?no Flink-style two-engine operational burden.
+- Same engine spans batch and streaming - no Flink-style two-engine operational burden.
 - Adaptive Query Execution and Kryo serializer are enabled by default in `delta_utils.get_spark_session()` for performance.
 - Standalone cluster manager is the simplest production-equivalent for local dev. `SparkSubmitOperator` works identically against standalone, YARN, K8s, or EMR.
 - The PySpark JVM bridge cost is acceptable; if it ever became a bottleneck, the highest-throughput jobs would migrate to Spark Connect or be rewritten in Scala without changing the surrounding pipeline.
-- Spark UI on :8080 gives free per-job observability ‚Ä?no APM integration needed for development.
+- Spark UI on :8080 gives free per-job observability - no APM integration needed for development.

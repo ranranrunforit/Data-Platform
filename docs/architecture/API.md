@@ -1,6 +1,6 @@
 # API Reference
 
-The serving API is a FastAPI app backed by DuckDB reading Gold Delta tables directly from MinIO. There is no caching layer between the API and storage â€?every request executes a fresh DuckDB query.
+The serving API is a FastAPI app backed by DuckDB reading Gold Delta tables directly from MinIO. There is no caching layer between the API and storage - every request executes a fresh DuckDB query.
 
 - **Base URL (local):** `http://localhost:8000`
 - **Interactive docs:** `http://localhost:8000/docs` (Swagger UI)
@@ -52,7 +52,7 @@ Cost breakdown by organisation over a date range.
 | Query param | Type | Default | Description |
 |---|---|---|---|
 | `query_date` | date (YYYY-MM-DD) | yesterday | End date of the range |
-| `days` | int (1â€?0) | 1 | Number of days back from `query_date` |
+| `days` | int (1 - 0) | 1 | Number of days back from `query_date` |
 
 **Response:**
 ```json
@@ -81,7 +81,7 @@ Cost breakdown by model architecture and GPU tier.
 | Query param | Type | Default |
 |---|---|---|
 | `query_date` | date | yesterday |
-| `days` | int (1â€?0) | 7 |
+| `days` | int (1 - 0) | 7 |
 
 **Response (truncated):**
 ```json
@@ -138,7 +138,7 @@ Multi-day capacity pressure summary by GPU type.
 
 | Query param | Type | Default |
 |---|---|---|
-| `days` | int (1â€?0) | 7 |
+| `days` | int (1 - 0) | 7 |
 
 **Response (per GPU type):**
 ```json
@@ -154,7 +154,7 @@ Multi-day capacity pressure summary by GPU type.
 }
 ```
 
-`capacity_pressure` is bucketed by `avg_util_pct`: `> 85 â†?high`, `> 65 â†?medium`, else `low`.
+`capacity_pressure` is bucketed by `avg_util_pct`: `> 85 - high`, `> 65 - medium`, else `low`.
 
 ---
 
@@ -196,7 +196,7 @@ p99 latency trend for a single model over time.
 |---|---|---|---|
 | `model_id` | string | required | e.g. `llama-3-70b-instruct` |
 | `region` | string | (all) | Optional filter |
-| `days` | int (1â€?0) | 14 | Lookback window |
+| `days` | int (1 - 0) | 14 | Lookback window |
 
 **Response (per day):**
 ```json
@@ -215,10 +215,10 @@ p99 latency trend for a single model over time.
 
 ## Error handling
 
-All endpoints return JSON. Validation errors (e.g. `days` out of range) return 422 with FastAPI's standard validation envelope. Underlying DuckDB errors propagate as 500 â€?there is no retry layer in the API itself; the caller is expected to retry idempotent reads.
+All endpoints return JSON. Validation errors (e.g. `days` out of range) return 422 with FastAPI's standard validation envelope. Underlying DuckDB errors propagate as 500 - there is no retry layer in the API itself; the caller is expected to retry idempotent reads.
 
 ## Concurrency model
 
-Each Uvicorn worker (default 2) holds an independent `:memory:` DuckDB connection. There is no shared state between workers and no shared file lock â€?workers only read Delta files from MinIO, which Delta Lake's transaction log permits at unbounded concurrency. Adding workers scales read throughput linearly until MinIO saturates.
+Each Uvicorn worker (default 2) holds an independent `:memory:` DuckDB connection. There is no shared state between workers and no shared file lock - workers only read Delta files from MinIO, which Delta Lake's transaction log permits at unbounded concurrency. Adding workers scales read throughput linearly until MinIO saturates.
 
 If the API ever needed to *write* (e.g. cache aggregations in a shared DuckDB file), single-writer would become a bottleneck. At that point the right move is to add a Postgres or DuckDB-on-MotherDuck cache, not to share a `.duckdb` file.

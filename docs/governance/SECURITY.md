@@ -12,16 +12,16 @@ This is a **development-grade** platform optimised for local Docker Compose. Sev
 
 - `.env.example` is committed; `.env` is git-ignored.
 - `make up` auto-generates two cryptographic secrets if `.env` still has placeholders:
-  - **Airflow Fernet key** â€?encrypts connection passwords stored in the metadata DB (`AIRFLOW__CORE__FERNET_KEY`)
-  - **Airflow webserver secret** â€?signs session cookies (`AIRFLOW__WEBSERVER__SECRET_KEY`)
+ - **Airflow Fernet key** - encrypts connection passwords stored in the metadata DB (`AIRFLOW__CORE__FERNET_KEY`)
+ - **Airflow webserver secret** - signs session cookies (`AIRFLOW__WEBSERVER__SECRET_KEY`)
 - Generation is one-shot and idempotent; re-running `make up` does not regenerate keys, preserving Airflow connections.
 
 ### Service authentication
 
-- **Airflow webserver** â€?username/password (default `admin`/`admin`); change via `AIRFLOW_ADMIN_USER`/`AIRFLOW_ADMIN_PASSWORD` in `.env`.
-- **MinIO console** â€?root user/password (default `minioadmin`/`minioadmin123`); change via `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`.
-- **Postgres** â€?Airflow service account; password via `POSTGRES_PASSWORD`.
-- **Redis** â€?optional password via `REDIS_PASSWORD`. Empty by default; broker URL in compose is `redis://:${REDIS_PASSWORD:-}@redis:6379/0`.
+- **Airflow webserver** - username/password (default `admin`/`admin`); change via `AIRFLOW_ADMIN_USER`/`AIRFLOW_ADMIN_PASSWORD` in `.env`.
+- **MinIO console** - root user/password (default `minioadmin`/`minioadmin123`); change via `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`.
+- **Postgres** - Airflow service account; password via `POSTGRES_PASSWORD`.
+- **Redis** - optional password via `REDIS_PASSWORD`. Empty by default; broker URL in compose is `redis://:${REDIS_PASSWORD:-}@redis:6379/0`.
 
 The `.env.example` file explicitly documents that an empty `REDIS_PASSWORD` is acceptable only on a private Docker network.
 
@@ -29,13 +29,13 @@ The `.env.example` file explicitly documents that an empty `REDIS_PASSWORD` is a
 
 - All inter-service traffic stays on the default Docker Compose bridge network.
 - Only the UI ports listed in [Services](../../README.md#services) are exposed to the host.
-- Spark master and Kafka brokers expose host ports (7077, 9092/9093/9094) for development convenience â€?these would not be exposed in production.
+- Spark master and Kafka brokers expose host ports (7077, 9092/9093/9094) for development convenience - these would not be exposed in production.
 
 ### Kafka durability
 
 - 3 brokers, `default.replication.factor=3`, `min.insync.replicas=2`, `acks=all` on the durability-critical job-events producer.
 - Single-broker failure causes neither data loss nor producer errors.
-- The inference producer uses `acks=1` (leader-only) deliberately â€?inference logs are tolerant to occasional loss in exchange for higher throughput.
+- The inference producer uses `acks=1` (leader-only) deliberately - inference logs are tolerant to occasional loss in exchange for higher throughput.
 
 ### Delta Lake ACID
 
@@ -87,15 +87,15 @@ The `airflow-init` container currently writes the `aws_default` connection from 
 
 - No central audit log of API queries. FastAPI access logs go to stdout and are captured by Docker's json-file driver, but there is no aggregation.
 - Airflow logs every task execution to `/opt/airflow/logs` (a local volume). Production should ship to S3 / CloudWatch / Stackdriver via `AIRFLOW__LOGGING__REMOTE_LOGGING`.
-- DuckDB queries do not log who issued them â€?the API would need to wrap each handler with a structured logger that captures requester identity once auth is added.
+- DuckDB queries do not log who issued them - the API would need to wrap each handler with a structured logger that captures requester identity once auth is added.
 
 ### Network model
 
 - All services live on a flat bridge network. Production should:
-  - Run application services in a private subnet
-  - Front the API and Airflow with a VPN or zero-trust proxy (Cloudflare Access, Tailscale, IAP)
-  - Restrict MinIO / S3 to VPC endpoint access only
-  - Place Kafka and Spark on a separate data-plane subnet with security-group rules limiting ingress to known producers / consumers
+ - Run application services in a private subnet
+ - Front the API and Airflow with a VPN or zero-trust proxy (Cloudflare Access, Tailscale, IAP)
+ - Restrict MinIO / S3 to VPC endpoint access only
+ - Place Kafka and Spark on a separate data-plane subnet with security-group rules limiting ingress to known producers / consumers
 
 ### Container hardening
 
@@ -133,10 +133,10 @@ For the local Docker Compose deployment, the trust boundary is the host machine.
 This is acceptable for local development because the same attacker would have full host access regardless. **Do not expose any of the published ports to a public network.**
 
 For production, the threat model expands to:
-- External users hitting the API â†?mitigated by OAuth2 + per-org RBAC + rate limiting
-- Internal users of one org seeing another org's data â†?mitigated by query-layer filtering + per-org IAM roles
-- Compromised CI runner pushing malicious images â†?mitigated by signed images (Sigstore) + admission control
-- Insider with read access to S3 â†?mitigated by SSE-KMS with per-bucket keys + CloudTrail
+- External users hitting the API - mitigated by OAuth2 + per-org RBAC + rate limiting
+- Internal users of one org seeing another org's data - mitigated by query-layer filtering + per-org IAM roles
+- Compromised CI runner pushing malicious images - mitigated by signed images (Sigstore) + admission control
+- Insider with read access to S3 - mitigated by SSE-KMS with per-bucket keys + CloudTrail
 
 ---
 

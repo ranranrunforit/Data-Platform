@@ -1,4 +1,4 @@
-# Data Platform for AI — Detailed Requirements
+# Data Platform for AI - Detailed Requirements
 
 > Concrete instantiation of the project-304 requirements template against the implementation in this repository. Every requirement below maps to actual code, a configuration, or a documented decision.
 
@@ -6,7 +6,7 @@
 
 ## Executive summary
 
-This document specifies the functional, non-functional, and operational requirements for **TechCorp's unified AI infrastructure data platform**. The solution ingests batch and streaming telemetry from a 96-node GPU cluster, gates promotion on automated quality checks, and serves business-ready marts via REST API. Requirements address business needs (cost transparency, SLO observability, self-serve analytics) while meeting technical (lakehouse, exactly-once streaming, MERGE for late arrivals), security (gap-analysed dev → prod), and compliance (SOC 2 + GDPR structural readiness) requirements.
+This document specifies the functional, non-functional, and operational requirements for **TechCorp's unified AI infrastructure data platform**. The solution ingests batch and streaming telemetry from a 96-node GPU cluster, gates promotion on automated quality checks, and serves business-ready marts via REST API. Requirements address business needs (cost transparency, SLO observability, self-serve analytics) while meeting technical (lakehouse, exactly-once streaming, MERGE for late arrivals), security (gap-analysed dev - prod), and compliance (SOC 2 + GDPR structural readiness) requirements.
 
 Full implementation: see [README.md](README.md). Architecture: see [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md).
 
@@ -20,14 +20,14 @@ Full implementation: see [README.md](README.md). Architecture: see [docs/archite
 - **Industry**: AI infrastructure / cloud computing
 - **Size**: ~5,000 employees globally; ~150 customer organisations
 - **Revenue**: ~$2.8B annually (target $5B by year three of this platform's life)
-- **ML maturity**: Mid-to-late stage — internal teams ship models; customers train and serve their own. Lacks unified observability across that estate.
+- **ML maturity**: Mid-to-late stage - internal teams ship models; customers train and serve their own. Lacks unified observability across that estate.
 
 ### Business drivers
 
-1. **Cost transparency (revenue protection)** — Manual monthly billing exports caused a $1.2M reconciliation miss last quarter; finance has lost board confidence in the GPU-cost line.
-2. **SLO credibility (customer retention)** — p99 latency breaches are reported by customers before TechCorp's own dashboards notice. Two large customers cited this in renewal negotiations.
-3. **Self-serve analytics (productivity)** — 12 data scientists are blocked behind a 4-person data-engineering ticket queue. Average wait for a new cost cut is 4 days.
-4. **Compliance (regulatory)** — SOC 2 Type II is a non-negotiable for the federal vertical TechCorp wants to enter in 2027. GDPR Art. 30 (records of processing) is needed for the EU expansion already in flight.
+1. **Cost transparency (revenue protection)** - Manual monthly billing exports caused a $1.2M reconciliation miss last quarter; finance has lost board confidence in the GPU-cost line.
+2. **SLO credibility (customer retention)** - p99 latency breaches are reported by customers before TechCorp's own dashboards notice. Two large customers cited this in renewal negotiations.
+3. **Self-serve analytics (productivity)** - 12 data scientists are blocked behind a 4-person data-engineering ticket queue. Average wait for a new cost cut is 4 days.
+4. **Compliance (regulatory)** - SOC 2 Type II is a non-negotiable for the federal vertical TechCorp wants to enter in 2027. GDPR Art. 30 (records of processing) is needed for the EU expansion already in flight.
 
 ### Success metrics
 
@@ -39,7 +39,7 @@ Full implementation: see [README.md](README.md). Architecture: see [docs/archite
 | SLO breach detection lag (customer-reported vs. platform-detected) | 6 h (customer first) | < 5 min (platform first) | < 30 s (platform first) |
 | Data-quality incidents reaching Gold | ~2 per quarter (silent failures) | 0 (GX gate blocks) | 0 |
 | Data-engineering ticket backlog | ~40 open | < 10 open | < 5 open |
-| **ROI**: payback period | n/a | on track for month-18 breakeven | 220% by year 2 — see [BUSINESS-CASE.md](docs/business/BUSINESS-CASE.md) |
+| **ROI**: payback period | n/a | on track for month-18 breakeven | 220% by year 2 - see [BUSINESS-CASE.md](docs/business/BUSINESS-CASE.md) |
 
 ---
 
@@ -108,18 +108,18 @@ Detailed audience-specific messaging and communication cadence: [docs/stakeholde
 **Acceptance criteria**:
 - [x] Re-running the daily DAG produces no duplicate `job_id` rows in `silver.jobs`
 - [x] A completion event for a job that already has `ended_at` set does **not** overwrite the existing values (MERGE condition `AND t.ended_at IS NULL`)
-- [x] In-flight jobs (no completion yet) show accrued cost based on `started_at` → `CURRENT_TIMESTAMP`
+- [x] In-flight jobs (no completion yet) show accrued cost based on `started_at` - `CURRENT_TIMESTAMP`
 
 **Priority**: Must Have
 
-**Implementation**: [spark/jobs/bronze_to_silver.py](spark/jobs/bronze_to_silver.py) — `merge_completions()`; [dbt/models/intermediate/int_job_costs.sql](dbt/models/intermediate/int_job_costs.sql) — Rule 4.
+**Implementation**: [spark/jobs/bronze_to_silver.py](spark/jobs/bronze_to_silver.py) - `merge_completions()`; [dbt/models/intermediate/int_job_costs.sql](dbt/models/intermediate/int_job_costs.sql) - Rule 4.
 
 **User stories**:
 1. As a **finance analyst**, I want late-arriving completions to update the correct day's cost, so monthly reconciliation matches the customer's actual usage.
 
 ---
 
-### FR-3: Quality-gated promotion (Silver → Gold)
+### FR-3: Quality-gated promotion (Silver - Gold)
 
 **Description**: A failed Great Expectations checkpoint on Silver must block the dbt Gold build for that day. The previous day's Gold remains queryable.
 
@@ -144,7 +144,7 @@ Detailed audience-specific messaging and communication cadence: [docs/stakeholde
 
 **Acceptance criteria**:
 - [x] Surrogate key `attribution_id = MD5(grain columns)` for idempotent re-runs
-- [x] `total_cost_usd ≥ 0` enforced by custom dbt test [`assert_positive_costs.sql`](dbt/tests/assert_positive_costs.sql)
+- [x] `total_cost_usd - 0` enforced by custom dbt test [`assert_positive_costs.sql`](dbt/tests/assert_positive_costs.sql)
 - [x] OOM kills (exit_code = 137) treated as billable; platform errors (exit_code = 143) as non-billable
 - [x] In-flight jobs (`ended_at IS NULL`) accrue cost from `started_at` to `CURRENT_TIMESTAMP`
 - [x] Available via `GET /cost/orgs`, `GET /cost/models`
@@ -222,8 +222,8 @@ Detailed audience-specific messaging and communication cadence: [docs/stakeholde
 **Description**: Silver and Gold Delta tables must support querying any version from the past 7 days.
 
 **Acceptance criteria**:
-- [x] `delta.logRetentionDuration` ≥ 7 days
-- [x] `VACUUM RETAIN 168 HOURS` runs nightly (not less — would break time-travel)
+- [x] `delta.logRetentionDuration` - 7 days
+- [x] `VACUUM RETAIN 168 HOURS` runs nightly (not less - would break time-travel)
 - [x] Example queries documented in [docs/governance/GOVERNANCE.md § Delta time travel](docs/governance/GOVERNANCE.md)
 
 **Priority**: Should Have
@@ -253,22 +253,22 @@ Detailed audience-specific messaging and communication cadence: [docs/stakeholde
 ### Performance
 
 **NFR-P1: API latency**
-- **Requirement**: P95 < 500 ms, P99 < 1 s on Gold marts at current scale (≤ 90 days, ≤ 50K jobs / day)
+- **Requirement**: P95 < 500 ms, P99 < 1 s on Gold marts at current scale ( - 90 days, - 50K jobs / day)
 - **Measurement**: FastAPI middleware logs request duration; Prometheus histogram (planned)
 - **Validation**: `curl -w '%{time_total}' http://localhost:8000/metrics/summary` returns < 0.5 s on a warm DuckDB
 
 **NFR-P2: Batch throughput**
-- **Requirement**: Full daily DAG (sense → Spark → GX → dbt → optimise) completes in < 20 min on a 2-worker Spark cluster
+- **Requirement**: Full daily DAG (sense - Spark - GX - dbt - optimise) completes in < 20 min on a 2-worker Spark cluster
 - **Measurement**: Airflow DAG runtime
 - **Validation**: Observed ~12 min on local Docker Compose with 2 Spark workers × 1 GB
 
 **NFR-P3: Streaming end-to-end lag**
-- **Requirement**: Kafka enqueue → Bronze Delta visible < 60 s (P95)
+- **Requirement**: Kafka enqueue - Bronze Delta visible < 60 s (P95)
 - **Measurement**: `_stream_ingested_at - kafka_timestamp` distribution
-- **Validation**: 30 s `processingTime` trigger + checkpoint commit ⇒ ~30–45 s typical
+- **Validation**: 30 s `processingTime` trigger + checkpoint commit - ~30 - 5 s typical
 
 **NFR-P4: Resource utilisation**
-- **Requirement**: Spark workers run at 60–80% memory utilisation under normal load; not OOM
+- **Requirement**: Spark workers run at 60 - 0% memory utilisation under normal load; not OOM
 - **Measurement**: Container `docker stats`; Spark UI
 - **Validation**: Documented memory tuning in [README.md](README.md) and [docs/operations/DEPLOYMENT.md](docs/operations/DEPLOYMENT.md)
 
@@ -277,7 +277,7 @@ Detailed audience-specific messaging and communication cadence: [docs/stakeholde
 **NFR-S1: Horizontal scaling**
 - **Requirement**: Scale from 2 to N Spark + Celery workers without code change
 - **Approach**: `make scale-workers N=…` (Docker Compose `--scale`); EKS managed node groups in production
-- **Validation**: 4-worker test → 4× concurrent task throughput in Flower
+- **Validation**: 4-worker test - 4× concurrent task throughput in Flower
 
 **NFR-S2: Data volume**
 - **Requirement**: Handle 50K jobs + 500K inference logs daily; design supports 50× growth
@@ -319,12 +319,12 @@ Detailed audience-specific messaging and communication cadence: [docs/stakeholde
 
 **NFR-SEC4: Audit logging**
 - **Requirement** (production): Centralised logs with 7-year retention for compliance
-- **Today**: FastAPI access logs + Airflow task logs → local volumes; production wiring documented
+- **Today**: FastAPI access logs + Airflow task logs - local volumes; production wiring documented
 
 ### Compliance
 
 **NFR-C1: GDPR**
-- **Articles covered structurally**: 5 (purpose / storage limitation), 25 (privacy by design), 30 (records of processing — lineage), 32 (security of processing)
+- **Articles covered structurally**: 5 (purpose / storage limitation), 25 (privacy by design), 30 (records of processing - lineage), 32 (security of processing)
 - **Articles requiring further work**: 17 (right to erasure), 20 (portability), 33 (breach notification)
 - **Validation**: Per-article gap analysis in [docs/governance/GOVERNANCE.md § GDPR](docs/governance/GOVERNANCE.md)
 
@@ -336,17 +336,17 @@ Detailed audience-specific messaging and communication cadence: [docs/stakeholde
 
 **NFR-COST1: Capital expenditure**
 - **Budget**: $2.4M one-time
-- **Allocation**: $1.6M infrastructure (EKS, MSK, S3, RDS, KMS); $0.5M migration (consultants + transition); $0.3M tooling licences (none required — fully OSS stack)
-- **Today**: Local dev cost ≈ $0 (Codespaces or laptop)
+- **Allocation**: $1.6M infrastructure (EKS, MSK, S3, RDS, KMS); $0.5M migration (consultants + transition); $0.3M tooling licences (none required - fully OSS stack)
+- **Today**: Local dev cost - $0 (Codespaces or laptop)
 
 **NFR-COST2: Operating expenditure**
 - **Budget**: $1.8M annually
 - **Breakdown** (production projection):
-  - $0.6M compute (EKS + Spark workers)
-  - $0.4M storage (S3, lifecycle-tiered)
-  - $0.2M streaming (MSK or Confluent Cloud)
-  - $0.3M observability + secrets + IAM
-  - $0.3M FTE-time for ongoing platform engineering
+ - $0.6M compute (EKS + Spark workers)
+ - $0.4M storage (S3, lifecycle-tiered)
+ - $0.2M streaming (MSK or Confluent Cloud)
+ - $0.3M observability + secrets + IAM
+ - $0.3M FTE-time for ongoing platform engineering
 - **Optimisation target**: 10% YoY reduction via reserved capacity, lifecycle tiering, query optimisation
 
 **NFR-COST3: Cost predictability**
@@ -357,7 +357,7 @@ Detailed audience-specific messaging and communication cadence: [docs/stakeholde
 ### Usability
 
 **NFR-U1: Developer experience**
-- **Requirement**: `make up` → all 14 services running in < 10 min on first run (image download dominated)
+- **Requirement**: `make up` - all 14 services running in < 10 min on first run (image download dominated)
 - **Onboarding**: Quickstart in [README.md § Quickstart](README.md) gets a new engineer to "API responds" in 15 min
 - **Documentation**: 11 markdown documents totalling ~30K words
 
@@ -388,7 +388,7 @@ Detailed audience-specific messaging and communication cadence: [docs/stakeholde
 
 1. **Capital budget**: $2.4M maximum (board-approved)
 2. **Operating budget**: $1.8M annually
-3. **ROI requirement**: Breakeven by month 18; 2× by month 30 — see [docs/business/BUSINESS-CASE.md § ROI](docs/business/BUSINESS-CASE.md)
+3. **ROI requirement**: Breakeven by month 18; 2× by month 30 - see [docs/business/BUSINESS-CASE.md § ROI](docs/business/BUSINESS-CASE.md)
 
 ---
 
@@ -396,10 +396,10 @@ Detailed audience-specific messaging and communication cadence: [docs/stakeholde
 
 | # | Assumption | Impact if invalid |
 |---|---|---|
-| A1 | GPU-pricing schedule is stable enough that quarterly review of the price map is sufficient | Mispricing window up to 90 days; mitigation: GX `mean(cost_usd) ∈ [1, 500]` drift detector catches step-changes within 24 h |
-| A2 | Customer organisations are happy with daily billing close, real-time intra-day not required at MVP | If wrong: must add incremental dbt materialisations + accrued-cost hourly job (already designed — see [COST-MODEL.md § Scaling considerations](docs/business/COST-MODEL.md)) |
-| A3 | Inference log volume stays ≤ 1B requests / month for the next 12 months | If exceeded: MSK partition count bump, Spark workers scale-out, possible Kafka tiered storage |
-| A4 | DuckDB performance acceptable for serving layer at < 1B Gold rows | Already documented limit: at ≥ 10 GB Gold tables we migrate to Spark SQL / Databricks SQL Warehouse |
+| A1 | GPU-pricing schedule is stable enough that quarterly review of the price map is sufficient | Mispricing window up to 90 days; mitigation: GX `mean(cost_usd) - [1, 500]` drift detector catches step-changes within 24 h |
+| A2 | Customer organisations are happy with daily billing close, real-time intra-day not required at MVP | If wrong: must add incremental dbt materialisations + accrued-cost hourly job (already designed - see [COST-MODEL.md § Scaling considerations](docs/business/COST-MODEL.md)) |
+| A3 | Inference log volume stays - 1B requests / month for the next 12 months | If exceeded: MSK partition count bump, Spark workers scale-out, possible Kafka tiered storage |
+| A4 | DuckDB performance acceptable for serving layer at < 1B Gold rows | Already documented limit: at - 10 GB Gold tables we migrate to Spark SQL / Databricks SQL Warehouse |
 | A5 | Synthetic data distribution is representative enough for design validation | Pre-prod load test with real-shape data before GA |
 | A6 | All customers accept SOC 2 Type II at month 18 rather than month 6 | If wrong: prioritise SSO + KMS + TLS in Phase 2 instead of Phase 3 |
 
@@ -409,27 +409,27 @@ Detailed audience-specific messaging and communication cadence: [docs/stakeholde
 
 | Risk | Impact | Probability | Mitigation |
 |---|---|---|---|
-| **R1** — DuckDB `delta` extension's non-thread-safe FFI causes prod-scale failures | High | Medium | Documented; pinned `threads: 1` for prod; migration path to Spark SQL ready ([README.md § DuckDB trade-off](README.md)) |
-| **R2** — Late-arrival rate exceeds 24 h, breaking the MERGE assumption | Medium | Low | Watermark in streaming = 10 min; batch DAG re-reads Bronze for 7 days; documented |
-| **R3** — Bad GPU price ships to production (cost regression) | High | Low | GX `mean(cost_usd) ∈ [1, 500]` + dbt `assert_positive_costs.sql` |
-| **R4** — Kafka cluster failure during streaming | High | Low | RF=3, min.isr=2; `acks=all` on critical topic; documented [README.md § pattern 6](README.md) |
-| **R5** — SOC 2 audit fails due to missing audit logs | High | Medium | Phase 3 deliverable: ship Airflow + FastAPI logs to CloudWatch with 7-yr retention |
-| **R6** — Talent gap: no Rust skills, can't fix the DuckDB FFI ourselves | Medium | High (already true) | Treat as a black-box bug; have a parallel Spark SQL path ready as fallback |
-| **R7** — Cost overrun in cloud bill (MSK + S3 + EKS) | Medium | Medium | Cost-budget alerts; quarterly reserved-instance review; lifecycle tiering on Bronze |
-| **R8** — Data scientists bypass the platform (back to scripts on raw S3) | Medium | Medium | Invest in API ergonomics + sample notebooks early; co-design with data-science lead |
-| **R9** — GDPR right-to-erasure request received before erasure pipeline is built | Medium | Low | Phase 4 deliverable; manual SOP in interim documented in [GOVERNANCE-PROCEDURES.md](docs/runbooks/GOVERNANCE-PROCEDURES.md) |
-| **R10** — Vendor lock-in via Databricks if we migrate prod Gold there | Medium | Low | Delta is open; dbt is portable; only the SQL Warehouse compute is vendor-specific |
+| **R1** - DuckDB `delta` extension's non-thread-safe FFI causes prod-scale failures | High | Medium | Documented; pinned `threads: 1` for prod; migration path to Spark SQL ready ([README.md § DuckDB trade-off](README.md)) |
+| **R2** - Late-arrival rate exceeds 24 h, breaking the MERGE assumption | Medium | Low | Watermark in streaming = 10 min; batch DAG re-reads Bronze for 7 days; documented |
+| **R3** - Bad GPU price ships to production (cost regression) | High | Low | GX `mean(cost_usd) - [1, 500]` + dbt `assert_positive_costs.sql` |
+| **R4** - Kafka cluster failure during streaming | High | Low | RF=3, min.isr=2; `acks=all` on critical topic; documented [README.md § pattern 6](README.md) |
+| **R5** - SOC 2 audit fails due to missing audit logs | High | Medium | Phase 3 deliverable: ship Airflow + FastAPI logs to CloudWatch with 7-yr retention |
+| **R6** - Talent gap: no Rust skills, can't fix the DuckDB FFI ourselves | Medium | High (already true) | Treat as a black-box bug; have a parallel Spark SQL path ready as fallback |
+| **R7** - Cost overrun in cloud bill (MSK + S3 + EKS) | Medium | Medium | Cost-budget alerts; quarterly reserved-instance review; lifecycle tiering on Bronze |
+| **R8** - Data scientists bypass the platform (back to scripts on raw S3) | Medium | Medium | Invest in API ergonomics + sample notebooks early; co-design with data-science lead |
+| **R9** - GDPR right-to-erasure request received before erasure pipeline is built | Medium | Low | Phase 4 deliverable; manual SOP in interim documented in [GOVERNANCE-PROCEDURES.md](docs/runbooks/GOVERNANCE-PROCEDURES.md) |
+| **R10** - Vendor lock-in via Databricks if we migrate prod Gold there | Medium | Low | Delta is open; dbt is portable; only the SQL Warehouse compute is vendor-specific |
 
 ---
 
 ## Out of scope
 
-1. **Real customer PII** — Bronze schema design supports adding `email`, `name`, but no production loader writes them until GDPR Art. 17 erasure pipeline (Phase 4) ships.
-2. **Multi-cloud at MVP** — GCP / Azure are aspirational; MVP is AWS-only.
-3. **Real-time intra-day billing** — Daily close is the MVP commitment; intra-day documented as Phase 3+ work.
-4. **ML model training** — This platform serves ML *infrastructure* telemetry; it is not an ML training platform.
-5. **Customer-facing dashboards / UI** — REST API is the deliverable; customer-facing UI is a separate roadmap item.
-6. **On-prem deployment** — Cloud-only; on-prem (e.g. for federal customers) is a Phase 5 conversation.
+1. **Real customer PII** - Bronze schema design supports adding `email`, `name`, but no production loader writes them until GDPR Art. 17 erasure pipeline (Phase 4) ships.
+2. **Multi-cloud at MVP** - GCP / Azure are aspirational; MVP is AWS-only.
+3. **Real-time intra-day billing** - Daily close is the MVP commitment; intra-day documented as Phase 3+ work.
+4. **ML model training** - This platform serves ML *infrastructure* telemetry; it is not an ML training platform.
+5. **Customer-facing dashboards / UI** - REST API is the deliverable; customer-facing UI is a separate roadmap item.
+6. **On-prem deployment** - Cloud-only; on-prem (e.g. for federal customers) is a Phase 5 conversation.
 
 ---
 
@@ -450,13 +450,13 @@ Detailed audience-specific messaging and communication cadence: [docs/stakeholde
 
 ---
 
-## Acceptance criteria — overall solution
+## Acceptance criteria - overall solution
 
 The solution is considered complete when:
 
 - [x] All Must-Have FRs implemented and demonstrable via `make up && make pipeline`
 - [x] All NFR families addressed (performance, scalability, availability, security, compliance, cost, usability)
-- [x] Security gap analysis explicit (dev → prod), not glossed over
+- [x] Security gap analysis explicit (dev - prod), not glossed over
 - [x] Documentation suite complete: ARCHITECTURE, API, DATA-MODEL, COST-MODEL, GOVERNANCE, GOVERNANCE-PROCEDURES, SECURITY, DEPLOYMENT, STEP_BY_STEP, BUSINESS-CASE, STAKEHOLDERS, REQUIREMENTS-ANALYSIS, PRESENTATION
 - [x] 5 ADRs (target 10; remainder captured as decision tables in [docs/architecture/ARCHITECTURE.md § Key design decisions](docs/architecture/ARCHITECTURE.md))
 - [x] Working end-to-end on a 16 GB laptop or GitHub Codespace
@@ -467,30 +467,30 @@ The solution is considered complete when:
 
 ## Appendices
 
-### Appendix A — Glossary
+### Appendix A - Glossary
 
 | Term | Definition |
 |---|---|
-| **Bronze / Silver / Gold** | Medallion lakehouse layers — raw / cleaned-enriched / business-ready |
+| **Bronze / Silver / Gold** | Medallion lakehouse layers - raw / cleaned-enriched / business-ready |
 | **MERGE** | Delta Lake UPSERT operation; enables idempotent late-arrival handling |
-| **MERGE condition** | `t.job_id = s.job_id AND t.ended_at IS NULL` — only updates open rows |
-| **GX** | Great Expectations — declarative data-quality framework |
-| **SLO** | Service Level Objective — internal target (e.g. p99 < 2 s) |
+| **MERGE condition** | `t.job_id = s.job_id AND t.ended_at IS NULL` - only updates open rows |
+| **GX** | Great Expectations - declarative data-quality framework |
+| **SLO** | Service Level Objective - internal target (e.g. p99 < 2 s) |
 | **OOM** | Out-Of-Memory; exit_code = 137 in our taxonomy |
-| **Platform error** | exit_code = 143 — TechCorp's fault, not billed |
+| **Platform error** | exit_code = 143 - TechCorp's fault, not billed |
 | **Grain** | The unique-row identifier of a table |
 | **Attribution_id** | MD5 surrogate key on the cost grain |
 
-### Appendix B — Reference resources
+### Appendix B - Reference resources
 
 - Databricks: "Medallion Lakehouse Architecture" (public blog)
 - Delta Lake whitepaper: "Delta Lake: High-Performance ACID Table Storage Over Cloud Object Stores" (VLDB 2020)
 - Kreps, J.: "I Heart Logs" (O'Reilly, 2014)
 - Great Expectations documentation v0.18.x
 - dbt-duckdb adapter documentation v1.7.4
-- AWS Well-Architected Framework — Analytics Lens
-- SOC 2 Trust Services Criteria (TSC) — AICPA 2017 (rev. 2022)
-- GDPR — Regulation (EU) 2016/679
+- AWS Well-Architected Framework - Analytics Lens
+- SOC 2 Trust Services Criteria (TSC) - AICPA 2017 (rev. 2022)
+- GDPR - Regulation (EU) 2016/679
 
 ---
 

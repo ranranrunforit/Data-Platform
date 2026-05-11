@@ -6,7 +6,7 @@
 
 ## Presentation goal
 
-This presentation should do four things in 8â€?2 minutes:
+This presentation should do four things in 8 - 2 minutes:
 
 1. Explain the business problem in concrete terms.
 2. Show that the architecture is appropriate and already implemented.
@@ -19,7 +19,7 @@ The audience can be mixed: course assessor, technical reviewer, executive-style 
 
 ## Recommended deck structure
 
-### Slide 1 â€?Title and one-line pitch
+### Slide 1 - Title and one-line pitch
 
 **Title**
 `TechCorp AI Infrastructure Data Platform`
@@ -33,9 +33,9 @@ The audience can be mixed: course assessor, technical reviewer, executive-style 
 - Your name / project identifier / duration
 
 **Speaker notes**
-â€œTechCorp currently has AI infrastructure telemetry split across separate systems for jobs, inference, and node metrics. This project unifies those sources into one governed data platform so finance, customer success, and engineering can work from the same trusted data.â€?
+â€œTechCorp currently has AI infrastructure telemetry split across separate systems for jobs, inference, and node metrics. This project unifies those sources into one governed data platform so finance, customer success, and engineering can work from the same trusted data. - 
 
-### Slide 2 â€?The business problem
+### Slide 2 - The business problem
 
 **Slide content**
 
@@ -47,21 +47,21 @@ The audience can be mixed: course assessor, technical reviewer, executive-style 
 | Governance is weak | No strong lineage or quality gate | Audit and compliance gap |
 
 **Speaker notes**
-â€œThe key here is not that the company lacks data. It has data everywhere. The problem is fragmentation, weak controls, and slow access.â€?
+â€œThe key here is not that the company lacks data. It has data everywhere. The problem is fragmentation, weak controls, and slow access. - 
 
-### Slide 3 â€?What the platform does
+### Slide 3 - What the platform does
 
 **Slide content**
 - Batch ingestion of job events and node metrics
 - Streaming ingestion of inference telemetry
-- Bronze â†?Silver â†?Gold medallion flow
+- Bronze - Silver - Gold medallion flow
 - Great Expectations gate before Gold
 - FastAPI endpoints for cost, utilization, and SLA
 
 **Speaker notes**
-â€œThis is not just a design exercise. The repository contains a working implementation using Spark, Kafka, Delta Lake, dbt, Great Expectations, Airflow, DuckDB, FastAPI, Terraform, and Docker Compose.â€?
+â€œThis is not just a design exercise. The repository contains a working implementation using Spark, Kafka, Delta Lake, dbt, Great Expectations, Airflow, DuckDB, FastAPI, Terraform, and Docker Compose. - 
 
-### Slide 4 â€?Architecture overview
+### Slide 4 - Architecture overview
 
 **Slide content**
 - Kafka + raw file ingestion
@@ -72,9 +72,9 @@ The audience can be mixed: course assessor, technical reviewer, executive-style 
 - DuckDB + FastAPI serving layer
 
 **Speaker notes**
-â€œThe architecture uses a standard enterprise lakehouse pattern because it fits the problem well. Delta Lake gives ACID guarantees and MERGE for late-arriving job completions, while dbt provides transparent business logic and testing.â€?
+â€œThe architecture uses a standard enterprise lakehouse pattern because it fits the problem well. Delta Lake gives ACID guarantees and MERGE for late-arriving job completions, while dbt provides transparent business logic and testing. - 
 
-### Slide 5 â€?Governance and control points
+### Slide 5 - Governance and control points
 
 **Slide content**
 - Bronze: permissive landing zone
@@ -84,9 +84,9 @@ The audience can be mixed: course assessor, technical reviewer, executive-style 
 - Retention by layer
 
 **Speaker notes**
-â€œThe strongest differentiator of this project is that governance is operationalised, not appended at the end. A failed Silver checkpoint blocks Gold promotion, which means billing and executive dashboards fail closed instead of silently drifting.â€?
+â€œThe strongest differentiator of this project is that governance is operationalised, not appended at the end. A failed Silver checkpoint blocks Gold promotion, which means billing and executive dashboards fail closed instead of silently drifting. - 
 
-### Slide 6 â€?What is implemented versus what is planned
+### Slide 6 - What is implemented versus what is planned
 
 **Slide content**
 
@@ -99,9 +99,9 @@ The audience can be mixed: course assessor, technical reviewer, executive-style 
 | Governance runbooks and SOPs | Automated subject-erasure workflow |
 
 **Speaker notes**
-â€œThis slide matters because it keeps the narrative honest. The current platform is development-grade but architecturally sound. The production path is explicit and documented.â€?
+â€œThis slide matters because it keeps the narrative honest. The current platform is development-grade but architecturally sound. The production path is explicit and documented. - 
 
-### Slide 7 â€?Business case
+### Slide 7 - Business case
 
 **Slide content**
 - Capex: $2.4M
@@ -111,9 +111,9 @@ The audience can be mixed: course assessor, technical reviewer, executive-style 
 - Conservative 3-year NPV: ~$2.7M
 
 **Speaker notes**
-â€œThe ROI is built from three hard-dollar sources: reduced billing leakage, faster self-serve analytics, and lower customer-impact from SLO blind spots. I kept the compliance upside separate so the numbers remain defensible.â€?
+â€œThe ROI is built from three hard-dollar sources: reduced billing leakage, faster self-serve analytics, and lower customer-impact from SLO blind spots. I kept the compliance upside separate so the numbers remain defensible. - 
 
-### Slide 8 â€?Stakeholders and outcomes
+### Slide 8 - Stakeholders and outcomes
 
 **Slide content**
 
@@ -126,9 +126,9 @@ The audience can be mixed: course assessor, technical reviewer, executive-style 
 | Data Science | Faster access to trusted analytics |
 
 **Speaker notes**
-â€œA useful architecture submission should show not only what the platform is, but who it serves and how communication changes by audience.â€?
+â€œA useful architecture submission should show not only what the platform is, but who it serves and how communication changes by audience. - 
 
-### Slide 9 â€?Delivery roadmap
+### Slide 9 - Delivery roadmap
 
 **Slide content**
 1. Phase 1: requirements, stakeholders, risks
@@ -137,9 +137,9 @@ The audience can be mixed: course assessor, technical reviewer, executive-style 
 4. Phase 4: production hardening and operationalisation
 
 **Speaker notes**
-â€œThe roadmap is intentionally phased so the MVP creates value early, while compliance and operational maturity continue in parallel.â€?
+â€œThe roadmap is intentionally phased so the MVP creates value early, while compliance and operational maturity continue in parallel. - 
 
-### Slide 10 â€?Closing
+### Slide 10 - Closing
 
 **Slide content**
 - One trusted platform
@@ -147,7 +147,7 @@ The audience can be mixed: course assessor, technical reviewer, executive-style 
 - One realistic migration path from dev to production
 
 **Speaker notes**
-â€œThe strongest final takeaway is that the project solves a real enterprise problem with a concrete implementation, not just aspirational architecture.â€?
+â€œThe strongest final takeaway is that the project solves a real enterprise problem with a concrete implementation, not just aspirational architecture. - 
 
 ---
 
@@ -155,12 +155,12 @@ The audience can be mixed: course assessor, technical reviewer, executive-style 
 
 If you only have 5 minutes, use this sequence:
 
-1. Slide 1 â€?title and pitch
-2. Slide 2 â€?the four pains
-3. Slide 4 â€?architecture overview
-4. Slide 5 â€?governance and controls
-5. Slide 7 â€?business case
-6. Slide 10 â€?close
+1. Slide 1 - title and pitch
+2. Slide 2 - the four pains
+3. Slide 4 - architecture overview
+4. Slide 5 - governance and controls
+5. Slide 7 - business case
+6. Slide 10 - close
 
 That version prioritises business framing, architecture credibility, and governance maturity.
 
@@ -181,7 +181,7 @@ This is the safest live-demo path because it shows value without requiring too m
 
 ### What to say
 
-â€œHere is the batch pipeline with the quality gate in the middle. Here is the medallion storage layout. And here is the self-serve surface that stakeholders actually consume. The point is that the platform is end-to-end: ingestion, transformation, governance, serving.â€?
+â€œHere is the batch pipeline with the quality gate in the middle. Here is the medallion storage layout. And here is the self-serve surface that stakeholders actually consume. The point is that the platform is end-to-end: ingestion, transformation, governance, serving. - 
 
 ### Backup if the live stack is not running
 
@@ -232,25 +232,25 @@ De-emphasise:
 
 ## Likely questions and strong answers
 
-### â€œWhy not just buy Databricks end-to-end?â€?
+### â€œWhy not just buy Databricks end-to-end? - 
 
 Answer:
-â€œBecause the goal here is to prove the architecture and its controls, not to outsource thinking. The chosen stack keeps storage, transformations, and governance portable while still leaving room to adopt managed compute later if scale demands it.â€?
+â€œBecause the goal here is to prove the architecture and its controls, not to outsource thinking. The chosen stack keeps storage, transformations, and governance portable while still leaving room to adopt managed compute later if scale demands it. - 
 
-### â€œIs this production-ready?â€?
-
-Answer:
-â€œNot fully. It is development-grade by design. What is production-ready is the architectural direction and the governance model. Security hardening items such as SSO, TLS, KMS, and central audit logging are explicitly documented as next-phase work.â€?
-
-### â€œWhat makes this more than a data pipeline?â€?
+### â€œIs this production-ready? - 
 
 Answer:
-â€œThe governance layer. This project treats quality gates, lineage, ownership, retention, runbooks, and stakeholder communication as first-class deliverables rather than side notes.â€?
+â€œNot fully. It is development-grade by design. What is production-ready is the architectural direction and the governance model. Security hardening items such as SSO, TLS, KMS, and central audit logging are explicitly documented as next-phase work. - 
 
-### â€œWhat is the biggest current limitation?â€?
+### â€œWhat makes this more than a data pipeline? - 
 
 Answer:
-â€œThe biggest gap is production hardening, not functional coverage. The platform works end-to-end locally, but operational controls such as authentication, encryption, and audit centralisation still need to be added for a real enterprise deployment.â€?
+â€œThe governance layer. This project treats quality gates, lineage, ownership, retention, runbooks, and stakeholder communication as first-class deliverables rather than side notes. - 
+
+### â€œWhat is the biggest current limitation? - 
+
+Answer:
+â€œThe biggest gap is production hardening, not functional coverage. The platform works end-to-end locally, but operational controls such as authentication, encryption, and audit centralisation still need to be added for a real enterprise deployment. - 
 
 ---
 
@@ -270,6 +270,6 @@ Answer:
 
 Use one of these final lines:
 
-- â€œThis project turns fragmented AI telemetry into a governed decision platform.â€?
-- â€œThe architecture is valuable because it improves trust, not just throughput.â€?
-- â€œThe submission demonstrates both system design and the operational discipline needed to run it.â€?
+- â€œThis project turns fragmented AI telemetry into a governed decision platform. - 
+- â€œThe architecture is valuable because it improves trust, not just throughput. - 
+- â€œThe submission demonstrates both system design and the operational discipline needed to run it. - 

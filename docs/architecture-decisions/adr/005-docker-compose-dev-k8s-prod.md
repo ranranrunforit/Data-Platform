@@ -12,8 +12,8 @@ The platform has 13 long-running services (MinIO, Redis, 3 Kafka brokers, Zookee
 
 Two distinct lifecycles need to be supported:
 
-- **Development / demo / CI** ‚Ä?one-command "everything up" on a laptop or Codespace, repeatable, isolated, low-friction tear-down.
-- **Production** ‚Ä?autoscaling, secrets from a real backend, multi-zone resilience, managed databases / brokers, image rollback, blue-green deployments.
+- **Development / demo / CI** - one-command "everything up" on a laptop or Codespace, repeatable, isolated, low-friction tear-down.
+- **Production** - autoscaling, secrets from a real backend, multi-zone resilience, managed databases / brokers, image rollback, blue-green deployments.
 
 Trying to use one tool for both ends in compromise: Compose has no autoscaling and no secrets backend; Kubernetes is overkill on a laptop and adds 30 seconds of YAML to every "let me try one thing" iteration.
 
@@ -23,18 +23,18 @@ For development:
 
 | Tool | Startup time | Multi-service | Health checks | Resource limits | Learning curve |
 |---|---|---|---|---|---|
-| **Docker Compose** | ~60 s warm | ‚ú?| ‚ú?| ‚ú?via `deploy.resources` | Low |
-| Kind / Minikube + Helm | ~3 min cold | ‚ú?| ‚ú?| ‚ú?| Medium |
-| Tilt / Skaffold | ~2 min | ‚ú?| ‚ú?| ‚ú?| Medium |
-| Bare `docker run` scripts | Fast per service | ‚ù?no graph | Manual | Manual | Low |
+| **Docker Compose** | ~60 s warm | - | - | - via `deploy.resources` | Low |
+| Kind / Minikube + Helm | ~3 min cold | - | - | - | Medium |
+| Tilt / Skaffold | ~2 min | - | - | - | Medium |
+| Bare `docker run` scripts | Fast per service | - no graph | Manual | Manual | Low |
 
 For production:
 
 | Target | Autoscaling | Managed services integration | Spark / Airflow story | Notes |
 |---|---|---|---|---|
-| **Kubernetes (EKS / GKE / AKS)** | ‚ú?| ‚ú?via IRSA / Workload Identity | spark-on-k8s-operator, KubernetesExecutor, Airflow Helm chart | Industry standard |
-| ECS / Fargate | ‚ú?| ‚ú?AWS-only | ‚ö†Ô∏è no first-class Spark; needs EMR Serverless | AWS-locked |
-| Nomad | ‚ú?| ‚ö†Ô∏è less rich | ‚ö†Ô∏è custom | Smaller ecosystem |
+| **Kubernetes (EKS / GKE / AKS)** | - | - via IRSA / Workload Identity | spark-on-k8s-operator, KubernetesExecutor, Airflow Helm chart | Industry standard |
+| ECS / Fargate | - | - AWS-only | ‚ö†Ô∏è no first-class Spark; needs EMR Serverless | AWS-locked |
+| Nomad | - | ‚ö†Ô∏è less rich | ‚ö†Ô∏è custom | Smaller ecosystem |
 | EC2 + systemd | ‚ö†Ô∏è manual | ‚ö†Ô∏è | ‚ö†Ô∏è manual | Pre-Docker era |
 
 ## Decision
@@ -47,7 +47,7 @@ For production:
 - `depends_on: { condition: service_healthy }` enforces the startup order without separate scripting.
 - `--scale airflow-worker=N` and `--scale spark-worker=N` give horizontal scaling without touching the compose file. Wired into [Makefile](../../../Makefile) as `make scale-workers N=4` / `make scale-spark N=4`.
 - `make up` covers the whole bring-up including auto-generation of Airflow Fernet keys.
-- Codespaces and Oracle Cloud Free Tier both run Compose natively ‚Ä?same setup commands across local, demo, and a free always-on environment.
+- Codespaces and Oracle Cloud Free Tier both run Compose natively - same setup commands across local, demo, and a free always-on environment.
 - CI integration test in [.github/workflows/ci.yml](../../../.github/workflows/ci.yml) brings up a subset (`minio + zookeeper + kafka-1`) on every push to main.
 
 ### Why Kubernetes for production (and not Compose at scale)
@@ -55,7 +55,7 @@ For production:
 Compose has no autoscaling, no node placement, no rolling deployments, no managed-secrets integration, no multi-AZ scheduling. Production needs all of these. Kubernetes is the only target that gives the platform:
 
 - **Autoscaling** for both Airflow workers (KEDA on Celery queue length) and Spark executors (spark-on-k8s-operator dynamic allocation).
-- **Per-pod resource isolation** for Spark jobs ‚Ä?every job becomes a pod with its own CPU/memory request, so a runaway transform cannot evict the scheduler.
+- **Per-pod resource isolation** for Spark jobs - every job becomes a pod with its own CPU/memory request, so a runaway transform cannot evict the scheduler.
 - **Managed-secret integration** via External Secrets Operator pulling from AWS Secrets Manager / GCP Secret Manager / Vault.
 - **Rolling deployments** for the API and Airflow without pipeline downtime.
 - **Multi-AZ scheduling** for stateless services; multi-AZ replication for managed dependencies (RDS / MSK / S3).
@@ -68,29 +68,29 @@ The same images that run on a laptop run in CI run on Kubernetes. Spark + Airflo
 
 ### Docker Compose (today)
 
-- [docker-compose.yml](../../../docker-compose.yml) ‚Ä?646 lines covering 14 services, 3 custom networks (default bridge), 9 named volumes, healthchecks on every long-running service, resource limits via `deploy.resources`.
-- [Dockerfile.airflow](../../../Dockerfile.airflow) ‚Ä?`apache/airflow:2.10.4-python3.11` + JDK 17 + Spark 3.5.1 client + pinned `requirements-airflow.txt`.
-- [Dockerfile.spark](../../../Dockerfile.spark) ‚Ä?`apache/spark:3.5.4` + `delta-spark==3.1.0`.
-- [serving/Dockerfile](../../../serving/Dockerfile) ‚Ä?`python:3.11-slim` + FastAPI + DuckDB + boto3.
+- [docker-compose.yml](../../../docker-compose.yml) - 646 lines covering 14 services, 3 custom networks (default bridge), 9 named volumes, healthchecks on every long-running service, resource limits via `deploy.resources`.
+- [Dockerfile.airflow](../../../Dockerfile.airflow) - `apache/airflow:2.10.4-python3.11` + JDK 17 + Spark 3.5.1 client + pinned `requirements-airflow.txt`.
+- [Dockerfile.spark](../../../Dockerfile.spark) - `apache/spark:3.5.4` + `delta-spark==3.1.0`.
+- [serving/Dockerfile](../../../serving/Dockerfile) - `python:3.11-slim` + FastAPI + DuckDB + boto3.
 - [Makefile](../../../Makefile) wraps every common operation. `make up`, `make scale-workers`, `make logs-<service>`, `make down`, `make reset`.
 
 ### Kubernetes (production migration path)
 
 Documented in [DEPLOYMENT.md ¬ß Production (cloud-native)](../../operations/DEPLOYMENT.md#production-cloud-native):
 
-- **Airflow** ‚Ü?official Helm chart (`apache-airflow/airflow`) with `KubernetesExecutor` instead of CeleryExecutor. Each task spawns a pod with its own resource request ‚Ä?no Celery worker pool to size.
-- **Spark** ‚Ü?spark-on-k8s-operator. `SparkSubmitOperator` becomes `SparkKubernetesOperator`. The PySpark job code in [spark/jobs/](../../../spark/jobs/) does not change.
-- **Kafka** ‚Ü?AWS MSK or Confluent Cloud (managed); not run inside K8s.
-- **Postgres / Redis** ‚Ü?RDS / ElastiCache (managed); not run inside K8s.
-- **MinIO** ‚Ü?AWS S3 (managed); same `s3a://` URLs, same code.
-- **API** ‚Ü?standard K8s `Deployment` + `Service` + Ingress, or Cloud Run / ECS Fargate for lower ops overhead.
+- **Airflow** - official Helm chart (`apache-airflow/airflow`) with `KubernetesExecutor` instead of CeleryExecutor. Each task spawns a pod with its own resource request - no Celery worker pool to size.
+- **Spark** - spark-on-k8s-operator. `SparkSubmitOperator` becomes `SparkKubernetesOperator`. The PySpark job code in [spark/jobs/](../../../spark/jobs/) does not change.
+- **Kafka** - AWS MSK or Confluent Cloud (managed); not run inside K8s.
+- **Postgres / Redis** - RDS / ElastiCache (managed); not run inside K8s.
+- **MinIO** - AWS S3 (managed); same `s3a://` URLs, same code.
+- **API** - standard K8s `Deployment` + `Service` + Ingress, or Cloud Run / ECS Fargate for lower ops overhead.
 
-The same container images work in both targets. The migration is a configuration change (Compose ‚Ü?Helm values), not a re-architecture.
+The same container images work in both targets. The migration is a configuration change (Compose - Helm values), not a re-architecture.
 
 ## Consequences
 
 - One stack definition (`docker-compose.yml`) is the source of truth for development; equivalent Helm charts (or Terraform modules wrapping them) take over for production.
-- The Compose stack will not be run in production ‚Ä?its postgres/redis/kafka services exist only because there is no managed equivalent on a laptop.
+- The Compose stack will not be run in production - its postgres/redis/kafka services exist only because there is no managed equivalent on a laptop.
 - The CI integration test exercises the Compose path; production deployment needs its own E2E test suite against a staging K8s cluster.
-- Kubernetes is documented but not implemented in this repo. Adding K8s manifests / a Helm chart is a follow-up that would not change any application code ‚Ä?only Operator-equivalent wiring.
+- Kubernetes is documented but not implemented in this repo. Adding K8s manifests / a Helm chart is a follow-up that would not change any application code - only Operator-equivalent wiring.
 - Resource limits in `docker-compose.yml` (e.g. `airflow-worker: 4 GB memory`) are tuned for a 16 GB laptop. Production Helm values will be much higher.
