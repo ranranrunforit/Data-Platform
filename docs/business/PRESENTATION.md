@@ -265,11 +265,3 @@ Answer:
 - [x] Architecture narrative: [ARCHITECTURE.md](../architecture/ARCHITECTURE.md)
 
 ---
-
-## Recommended close
-
-Use one of these final lines:
-
-- “This project turns fragmented AI telemetry into a governed decision platform. - 
-- “The architecture is valuable because it improves trust, not just throughput. - 
-- “The submission demonstrates both system design and the operational discipline needed to run it. - 
