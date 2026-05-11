@@ -1,24 +1,24 @@
 # Data Model
 
-Schema reference for every table in the platform â€” Bronze, Silver, and Gold. Read top-to-bottom to follow how raw events become billing analytics.
+Schema reference for every table in the platform â€?Bronze, Silver, and Gold. Read top-to-bottom to follow how raw events become billing analytics.
 
 ---
 
 ## Source datasets (synthetic generators)
 
-All three generators live in [data/generator/](../data/generator/) with deterministic seeds (so re-runs produce identical data).
+All three generators live in [data/generator/](../../data/generator/) with deterministic seeds (so re-runs produce identical data).
 
-### `gpu_job_events` â€” 50 000 records
+### `gpu_job_events` â€?50 000 records
 
 One record per GPU training job. Distributions are based on MLCommons benchmarks and public GPU pricing.
 
 | Field | Type | Notes |
 |---|---|---|
 | `job_id` | UUID | Primary key |
-| `org_id` | string | One of `org-001` â€¦ `org-020` |
-| `user_id` | string | One of `user-0001` â€¦ `user-0200` |
+| `org_id` | string | One of `org-001` â€?`org-020` |
+| `user_id` | string | One of `user-0001` â€?`user-0200` |
 | `gpu_type` | string | `H100-SXM5-80GB`, `A100-SXM4-80GB`, `A100-PCIe-40GB`, `RTX-4090`, `A10G` |
-| `gpu_count` | int | Weighted: 1 (30%), 2, 4, 8, 16, 32, 64 â€” tail of multi-node jobs |
+| `gpu_count` | int | Weighted: 1 (30%), 2, 4, 8, 16, 32, 64 â€?tail of multi-node jobs |
 | `framework` | string | `pytorch`, `jax`, `tensorflow`, `deepspeed` |
 | `model_arch` | string | `llm-7b`, `llm-13b`, `llm-70b`, `diffusion-xl`, `diffusion-base`, `vit-large`, `bert-large`, `custom` |
 | `dataset_size_gb` | double | Log-normal around `model_arch` baseline |
@@ -39,37 +39,37 @@ GPU pricing (USD per hour, per GPU):
 | A10G | 0.90 |
 | RTX-4090 | 0.74 |
 
-### `inference_api_logs` â€” 500 000 records
+### `inference_api_logs` â€?500 000 records
 
-One record per inference request. Latency is bimodal â€” cache hits (~33 ms) vs full generation (hundreds to thousands of ms).
+One record per inference request. Latency is bimodal â€?cache hits (~33 ms) vs full generation (hundreds to thousands of ms).
 
 | Field | Type | Notes |
 |---|---|---|
 | `request_id` | UUID | Primary key |
-| `org_id` | string | `org-001` â€¦ `org-020` |
-| `user_id` | string | `user-0001` â€¦ `user-0200` |
+| `org_id` | string | `org-001` â€?`org-020` |
+| `user_id` | string | `user-0001` â€?`user-0200` |
 | `model_id` | string | `llama-3-70b-instruct`, `llama-3-8b-instruct`, `mixtral-8x7b-instruct`, `stable-diffusion-xl`, `whisper-large-v3`, `llama-3-405b-instruct`, `codellama-34b-instruct` |
 | `region` | string | `us-east-1` (40%), `us-west-2`, `eu-west-1`, `ap-southeast-1` |
 | `status_code` | int | Weighted: 200 (70%), occasional 429, 500, 503 |
 | `cache_hit` | bool | 22% true |
 | `input_tokens` / `output_tokens` / `total_tokens` | int | Log-normal; zero on non-200 |
-| `latency_ms` | double | Bimodal; errors are fast (10â€“200 ms) |
+| `latency_ms` | double | Bimodal; errors are fast (10â€?00 ms) |
 | `cost_usd` | double | `total_tokens / 1000 Ã— cost_per_1k_tokens` |
 | `timestamp` | timestamp | Random within the last 90 days |
 
-### `node_metrics` â€” ~6.6M records
+### `node_metrics` â€?~6.6M records
 
 96 nodes Ã— 8 GPUs Ã— 24 h Ã— 90 d. One record per (gpu_id, hour).
 
 | Field | Type | Notes |
 |---|---|---|
 | `timestamp` | timestamp | Hour bucket |
-| `node_id` | string | `node-001` â€¦ `node-096` |
+| `node_id` | string | `node-001` â€?`node-096` |
 | `gpu_id` | string | `node-XXX-gpu-N` |
-| `gpu_index` | int | 0â€“7 |
+| `gpu_index` | int | 0â€? |
 | `gpu_type` | string | 16 H100 nodes, 48 A100 nodes, 32 RTX-4090 nodes |
 | `rack_id` | string | 8 GPUs share a rack (12 racks total) |
-| `gpu_util_pct` | double | 0â€“100; circadian pattern (peak 14:00â€“22:00 UTC) |
+| `gpu_util_pct` | double | 0â€?00; circadian pattern (peak 14:00â€?2:00 UTC) |
 | `memory_util_pct` | double | Correlated with `gpu_util_pct` |
 | `temp_celsius` | double | 35Â°C idle, scales with utilisation |
 | `power_watts` | double | TDP-scaled: H100=700 W, A100=400 W, RTX-4090=450 W |
@@ -94,7 +94,7 @@ Lifecycle: 90-day expiry on the entire `bronze/` bucket via MinIO ILM. Re-derive
 
 ## Silver layer (`s3a://silver/`)
 
-Cleaned, deduped, enriched, partitioned. Written by `bronze_to_silver.py` ([spark/jobs/](../spark/jobs/bronze_to_silver.py)).
+Cleaned, deduped, enriched, partitioned. Written by `bronze_to_silver.py` ([spark/jobs/](../../spark/jobs/bronze_to_silver.py)).
 
 ### `silver/jobs`
 
@@ -117,7 +117,7 @@ Built from `bronze/inference_logs/` in the current implementation. Partitioned b
 Transformations:
 - Schema cast
 - `dropDuplicates(["request_id"])`
-- `cache_hit` â†’ boolean
+- `cache_hit` â†?boolean
 - `is_success = (status_code = 200)`
 - `log_date`, `log_hour` derived from `timestamp`
 
@@ -138,13 +138,13 @@ Transformations:
 
 Business-ready marts built by dbt + DuckDB. Materialised as Delta tables.
 
-### `gold/cost_attribution` â€” billing mart
+### `gold/cost_attribution` â€?billing mart
 
 **Grain:** one row per `(job_date, org_id, user_id, model_arch, gpu_tier, gpu_type, framework)`.
 
-**Source path:** `silver/jobs` â†’ `stg_jobs` (view) â†’ `int_job_costs` (table) â†’ `cost_attribution` (table).
+**Source path:** `silver/jobs` â†?`stg_jobs` (view) â†?`int_job_costs` (table) â†?`cost_attribution` (table).
 
-The intermediate model `int_job_costs` encodes the billing rules â€” see [COST-MODEL.md](COST-MODEL.md) for the full logic.
+The intermediate model `int_job_costs` encodes the billing rules â€?see [COST-MODEL.md](../business/COST-MODEL.md) for the full logic.
 
 | Column | Description |
 |---|---|
@@ -154,14 +154,14 @@ The intermediate model `int_job_costs` encodes the billing rules â€” see [COST-M
 | `total_gpu_hours` | Sum of `gpu_hours` |
 | `avg_cost_per_success_usd` | Mean cost over successful jobs only |
 | `avg_duration_hours`, `max_duration_hours` | Successful jobs only |
-| `oom_rate` | `oom_jobs / total_jobs` â€” signals customers needing memory-optimised instances |
+| `oom_rate` | `oom_jobs / total_jobs` â€?signals customers needing memory-optimised instances |
 | `success_rate` | `succeeded_jobs / (total_jobs - running_jobs)` |
 
-### `gold/gpu_utilization_hourly` â€” capacity planning mart
+### `gold/gpu_utilization_hourly` â€?capacity planning mart
 
 **Grain:** one row per `(hour_bucket, gpu_type, gpu_tier, rack_id)`.
 
-**Source path:** `silver/node_metrics` â†’ `gpu_utilization_hourly`.
+**Source path:** `silver/node_metrics` â†?`gpu_utilization_hourly`.
 
 | Column | Description |
 |---|---|
@@ -170,22 +170,22 @@ The intermediate model `int_job_costs` encodes the billing rules â€” see [COST-M
 | `avg_temp_celsius`, `max_temp_celsius` | Thermal |
 | `total_power_kw` | Power draw per hour |
 | `active_nodes`, `active_gpus` | Reporting GPUs |
-| `high_util_gpu_count` | GPUs at > 90% â€” capacity pressure indicator |
-| `idle_gpu_count` | GPUs at < 10% â€” wasted capacity |
+| `high_util_gpu_count` | GPUs at > 90% â€?capacity pressure indicator |
+| `idle_gpu_count` | GPUs at < 10% â€?wasted capacity |
 | `thermal_warning_count` | GPUs at > 85 Â°C |
 | `high_util_rate`, `idle_rate` | Rates over `active_gpus` |
 
-### `gold/job_performance_sla` â€” SLO monitoring mart
+### `gold/job_performance_sla` â€?SLO monitoring mart
 
 **Grain:** one row per `(log_date, model_id, region)`.
 
-**Source path:** `silver/inference` (success only) â†’ `stg_inference` â†’ `job_performance_sla`.
+**Source path:** `silver/inference` (success only) â†?`stg_inference` â†?`job_performance_sla`.
 
 | Column | Description |
 |---|---|
 | `total_requests`, `cache_hit_requests`, `cache_hit_rate` | Volume + cache effectiveness |
 | `avg_latency_ms`, `p50_latency_ms`, `p95_latency_ms`, `p99_latency_ms`, `max_latency_ms` | Latency distribution |
-| `p50_latency_ms_non_cached`, `p99_latency_ms_non_cached` | Latency excluding cache hits â€” fairer measure of generation speed |
+| `p50_latency_ms_non_cached`, `p99_latency_ms_non_cached` | Latency excluding cache hits â€?fairer measure of generation speed |
 | `avg_tokens_per_request`, `total_tokens` | Throughput |
 | `total_cost_usd`, `avg_cost_per_request` | Cost |
 | `model_size_tier` | `small`, `medium`, `large`, `xl` derived from `model_id` |
@@ -204,7 +204,7 @@ SLO thresholds (must match `streaming_health_dag.py`):
 
 ## Tests
 
-dbt tests (declared in [dbt/models/marts/schema.yml](../dbt/models/marts/schema.yml)):
+dbt tests (declared in [dbt/models/marts/schema.yml](../../dbt/models/marts/schema.yml)):
 
 - `attribution_id` is unique + not_null
 - `total_cost_usd` is not_null and `>= 0`
@@ -213,15 +213,15 @@ dbt tests (declared in [dbt/models/marts/schema.yml](../dbt/models/marts/schema.
 - `p99_latency_ms > 0`
 - Sources: `job_id` and `request_id` unique + not_null; `gpu_type` and `status_code` in accepted-value sets
 
-Custom test ([dbt/tests/assert_positive_costs.sql](../dbt/tests/assert_positive_costs.sql)) â€” fails if any row in `cost_attribution` has `total_cost_usd < 0`.
+Custom test ([dbt/tests/assert_positive_costs.sql](../../dbt/tests/assert_positive_costs.sql)) â€?fails if any row in `cost_attribution` has `total_cost_usd < 0`.
 
-Great Expectations suite ([quality/expectations/suite_silver_jobs.py](../quality/expectations/suite_silver_jobs.py)):
+Great Expectations suite ([quality/expectations/suite_silver_jobs.py](../../quality/expectations/suite_silver_jobs.py)):
 
 - Row count `> 500` (silent failure detector)
 - Critical columns not null: `job_id`, `org_id`, `user_id`, `gpu_type`, `gpu_count`, `started_at`
 - `job_id` unique
-- `gpu_count âˆˆ [1, 512]`, `cost_usd >= 0` (mostly 0.99)
-- `gpu_type âˆˆ KNOWN_GPU_TYPES` (mostly 0.99)
-- `framework âˆˆ KNOWN_FRAMEWORKS` (mostly 0.98)
-- `mean(cost_usd) âˆˆ [1.0, 500.0]` â€” pricing-drift detector
-- `median(gpu_count) âˆˆ [1, 8]`
+- `gpu_count âˆ?[1, 512]`, `cost_usd >= 0` (mostly 0.99)
+- `gpu_type âˆ?KNOWN_GPU_TYPES` (mostly 0.99)
+- `framework âˆ?KNOWN_FRAMEWORKS` (mostly 0.98)
+- `mean(cost_usd) âˆ?[1.0, 500.0]` â€?pricing-drift detector
+- `median(gpu_count) âˆ?[1, 8]`

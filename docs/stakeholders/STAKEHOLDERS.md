@@ -8,40 +8,40 @@
 
 | Role | Top concern | What they want from you | Artefact |
 |---|---|---|---|
-| **CTO** | Strategic alignment, ROI, build-vs-buy | "Why this, why now, what does it cost, when does it pay back?" | [BUSINESS-CASE.md](BUSINESS-CASE.md), [PRESENTATION.md Â§ Exec deck](PRESENTATION.md) |
-| **CFO / Finance Director** | TCO, billing accuracy, audit | "Where is the money going, and can I trust the numbers?" | [COST-MODEL.md](COST-MODEL.md), [BUSINESS-CASE.md Â§ ROI](BUSINESS-CASE.md) |
-| **VP Engineering** | Reliability, scalability, on-call load | "Will my team be paged at 3 a.m.? Can it scale?" | [ARCHITECTURE.md](ARCHITECTURE.md), [adr/](adr/), [DEPLOYMENT.md](DEPLOYMENT.md) |
-| **CISO** | SOC 2, GDPR, audit trail | "What's encrypted, who has access, what's the gap?" | [SECURITY.md](SECURITY.md), [GOVERNANCE.md](GOVERNANCE.md) |
-| **DPO** | GDPR Arts. 5, 17, 30, 32 | "Lineage, retention, erasure â€” show me." | [GOVERNANCE.md Â§ GDPR](GOVERNANCE.md), [GOVERNANCE-PROCEDURES.md](GOVERNANCE-PROCEDURES.md) |
-| **Head of Customer Success** | Renewal risk, breach response | "When do I learn about SLO breaches?" | [API.md Â§ /sla](API.md), live dashboard demo |
-| **Data Science lead** | Latency to insight, self-serve | "Can I answer 'what was our spend last week' in 5 minutes?" | [README.md](../README.md), [API.md](API.md), [STEP_BY_STEP.md](STEP_BY_STEP.md) |
-| **Capacity Planning** | Fleet utilisation, hardware mix | "Which GPUs are saturated, which are idle?" | [API.md Â§ /utilization](API.md) |
-| **Platform Engineering (operator)** | Deploy / scale / debug | "What do I run when it breaks?" | [DEPLOYMENT.md](DEPLOYMENT.md), [GOVERNANCE-PROCEDURES.md Â§ Runbooks](GOVERNANCE-PROCEDURES.md) |
+| **CTO** | Strategic alignment, ROI, build-vs-buy | "Why this, why now, what does it cost, when does it pay back?" | [BUSINESS-CASE.md](../business/BUSINESS-CASE.md), [PRESENTATION.md Â§ Exec deck](../business/PRESENTATION.md) |
+| **CFO / Finance Director** | TCO, billing accuracy, audit | "Where is the money going, and can I trust the numbers?" | [COST-MODEL.md](../business/COST-MODEL.md), [BUSINESS-CASE.md Â§ ROI](../business/BUSINESS-CASE.md) |
+| **VP Engineering** | Reliability, scalability, on-call load | "Will my team be paged at 3 a.m.? Can it scale?" | [ARCHITECTURE.md](../architecture/ARCHITECTURE.md), [adr/](../architecture-decisions/adr/), [DEPLOYMENT.md](../operations/DEPLOYMENT.md) |
+| **CISO** | SOC 2, GDPR, audit trail | "What's encrypted, who has access, what's the gap?" | [SECURITY.md](../governance/SECURITY.md), [GOVERNANCE.md](../governance/GOVERNANCE.md) |
+| **DPO** | GDPR Arts. 5, 17, 30, 32 | "Lineage, retention, erasure â€?show me." | [GOVERNANCE.md Â§ GDPR](../governance/GOVERNANCE.md), [GOVERNANCE-PROCEDURES.md](../runbooks/GOVERNANCE-PROCEDURES.md) |
+| **Head of Customer Success** | Renewal risk, breach response | "When do I learn about SLO breaches?" | [API.md Â§ /sla](../architecture/API.md), live dashboard demo |
+| **Data Science lead** | Latency to insight, self-serve | "Can I answer 'what was our spend last week' in 5 minutes?" | [README.md](../../README.md), [API.md](../architecture/API.md), [STEP_BY_STEP.md](../operations/STEP_BY_STEP.md) |
+| **Capacity Planning** | Fleet utilisation, hardware mix | "Which GPUs are saturated, which are idle?" | [API.md Â§ /utilization](../architecture/API.md) |
+| **Platform Engineering (operator)** | Deploy / scale / debug | "What do I run when it breaks?" | [DEPLOYMENT.md](../operations/DEPLOYMENT.md), [GOVERNANCE-PROCEDURES.md Â§ Runbooks](../runbooks/GOVERNANCE-PROCEDURES.md) |
 
 ---
 
 ## Detailed stakeholder profiles
 
-### CTO â€” Executive Sponsor
+### CTO â€?Executive Sponsor
 
 - **Primary KPIs**: platform ROI, time-to-market for downstream products, technical debt reduction
 - **Decision rights**: cap budget, kill / continue
 - **Concerns**:
   - Are we building or buying? (Why not Databricks SQL Warehouse end-to-end?)
-  - Multi-cloud insurance â€” what's lock-in?
-  - Headcount efficiency â€” does this absorb or release engineers?
+  - Multi-cloud insurance â€?what's lock-in?
+  - Headcount efficiency â€?does this absorb or release engineers?
 - **What you say**:
-  - "Build for the lakehouse layer (Delta Lake + dbt + DuckDB + Spark) â€” all open, all portable. Buy managed compute (EKS, MSK) â€” operational toil isn't differentiating."
-  - "Vendor lock-in is on managed compute only. Storage format (Delta), transformation (dbt), orchestration (Airflow) are all OSS â€” exit cost is migration of a few hundred lines of YAML."
+  - "Build for the lakehouse layer (Delta Lake + dbt + DuckDB + Spark) â€?all open, all portable. Buy managed compute (EKS, MSK) â€?operational toil isn't differentiating."
+  - "Vendor lock-in is on managed compute only. Storage format (Delta), transformation (dbt), orchestration (Airflow) are all OSS â€?exit cost is migration of a few hundred lines of YAML."
   - "MVP releases 1 DE from the ticket queue and absorbs 1 platform engineer. Net: zero headcount change, 12 data scientists unblocked."
 - **What you avoid saying**:
-  - "Cutting-edge" â€” they want boring + working, not novel
-  - Implementation details (Spark partition counts) â€” they trust you on those
+  - "Cutting-edge" â€?they want boring + working, not novel
+  - Implementation details (Spark partition counts) â€?they trust you on those
 - **Cadence**: Monthly 30-min review with dashboard, ad-hoc on major risk surfaces
 
 ---
 
-### CFO / Finance Director â€” Budget Owner & Customer
+### CFO / Finance Director â€?Budget Owner & Customer
 
 - **Primary KPIs**: billing close cycle, reconciliation accuracy, cost-per-customer
 - **Decision rights**: opex allocation, billing-rules approval
@@ -50,15 +50,15 @@
   - What happens if a GPU price changes mid-month?
   - How do I audit a single customer's invoice?
 - **What you say**:
-  - "Every `cost_attribution` row traces to source events in `silver.jobs` â€” `attribution_id = MD5(grain)`. Drill-down is a single dbt model lookup."
-  - "Price changes are caught two ways: (a) GX checks `mean(cost_usd)` is in [$1, $500] â€” a 2Ã— price typo fails the gate before Gold updates. (b) `assert_positive_costs.sql` blocks negative billing."
-  - "OOM kills (137) are billable per current policy; platform errors (143) are not. Both are documented in [COST-MODEL.md Â§ Billing rules](COST-MODEL.md). If you want to change either rule, it's a 30-minute change + 1-day pipeline rebuild."
+  - "Every `cost_attribution` row traces to source events in `silver.jobs` â€?`attribution_id = MD5(grain)`. Drill-down is a single dbt model lookup."
+  - "Price changes are caught two ways: (a) GX checks `mean(cost_usd)` is in [$1, $500] â€?a 2Ã— price typo fails the gate before Gold updates. (b) `assert_positive_costs.sql` blocks negative billing."
+  - "OOM kills (137) are billable per current policy; platform errors (143) are not. Both are documented in [COST-MODEL.md Â§ Billing rules](../business/COST-MODEL.md). If you want to change either rule, it's a 30-minute change + 1-day pipeline rebuild."
 - **Cadence**: Monthly billing-mart walkthrough during MVP, monthly variance review after GA
-- **Artefacts they care about**: Cost-attribution drill-down (org â†’ user â†’ date â†’ job_id); monthly reconciliation report; audit log of every billing-rule change
+- **Artefacts they care about**: Cost-attribution drill-down (org â†?user â†?date â†?job_id); monthly reconciliation report; audit log of every billing-rule change
 
 ---
 
-### CISO â€” Security Lead
+### CISO â€?Security Lead
 
 - **Primary KPIs**: incidents, audit findings, vulnerability response time
 - **Decision rights**: security gate on production go-live, audit-finding remediation timelines
@@ -67,18 +67,18 @@
   - Who can read what?
   - When something goes wrong, can we tell who did it?
 - **What you say** (the honest version):
-  - "Today is dev-grade. [SECURITY.md](SECURITY.md) lists every gap. Production checklist is one file you can review, not a folder of half-promises."
+  - "Today is dev-grade. [SECURITY.md](../governance/SECURITY.md) lists every gap. Production checklist is one file you can review, not a folder of half-promises."
   - "Production path: SSO on all UIs, KMS on every bucket, TLS end-to-end, audit logs to CloudWatch with 7-year retention. ETA: Phase 2 = SSO + TLS; Phase 3 = KMS + audit pipeline."
-  - "Processing Integrity is the SOC 2 criterion we're strongest on out of the box â€” 3-checkpoint quality gate, MERGE idempotency, Delta ACID, pinned versions."
+  - "Processing Integrity is the SOC 2 criterion we're strongest on out of the box â€?3-checkpoint quality gate, MERGE idempotency, Delta ACID, pinned versions."
 - **What you avoid saying**:
-  - "We'll get to it" â€” be specific about Phase 2 / 3 / 4
-  - Hand-waving the gap â€” the gap is the document, not the absence of one
+  - "We'll get to it" â€?be specific about Phase 2 / 3 / 4
+  - Hand-waving the gap â€?the gap is the document, not the absence of one
 - **Cadence**: Bi-weekly pair review of new endpoints / DAGs; security gate before production push
-- **Artefacts they care about**: [SECURITY.md](SECURITY.md) gap analysis, threat model, dev-only-conveniences list
+- **Artefacts they care about**: [SECURITY.md](../governance/SECURITY.md) gap analysis, threat model, dev-only-conveniences list
 
 ---
 
-### DPO â€” Data Protection Officer
+### DPO â€?Data Protection Officer
 
 - **Primary KPIs**: data-subject request SLA (30 days), records-of-processing completeness
 - **Decision rights**: GDPR readiness sign-off, data-classification policy
@@ -87,16 +87,16 @@
   - Where is each personal-data column, and what's its retention?
   - Is lineage demonstrable to an auditor?
 - **What you say**:
-  - "Today's synthetic data has no real PII. Production schema supports `org_id` + `user_id` as the only identifiers â€” both pseudonyms mapped from IAM."
-  - "Erasure today is a manual SOP (see [GOVERNANCE-PROCEDURES.md Â§ Subject erasure](GOVERNANCE-PROCEDURES.md)) â€” 30-day SLA achievable at current volume. Automated pipeline is Phase 4."
-  - "Lineage is end-to-end traceable: dbt DAG renders the path from `silver/jobs` â†’ `int_job_costs` â†’ `cost_attribution`. Plus a manual table in [GOVERNANCE.md Â§ Lineage](GOVERNANCE.md) for an auditor who can't run dbt."
+  - "Today's synthetic data has no real PII. Production schema supports `org_id` + `user_id` as the only identifiers â€?both pseudonyms mapped from IAM."
+  - "Erasure today is a manual SOP (see [GOVERNANCE-PROCEDURES.md Â§ Subject erasure](../runbooks/GOVERNANCE-PROCEDURES.md)) â€?30-day SLA achievable at current volume. Automated pipeline is Phase 4."
+  - "Lineage is end-to-end traceable: dbt DAG renders the path from `silver/jobs` â†?`int_job_costs` â†?`cost_attribution`. Plus a manual table in [GOVERNANCE.md Â§ Lineage](../governance/GOVERNANCE.md) for an auditor who can't run dbt."
   - "Retention is per-layer: Bronze 90 d (MinIO ILM), Silver Delta time-travel 7 d, Kafka 7 d. All explicit, no implicit infinite-retention."
 - **Cadence**: Quarterly compliance review; ad-hoc on subject requests
-- **Artefacts they care about**: [GOVERNANCE.md Â§ GDPR](GOVERNANCE.md) table (per-article coverage + gap), records of processing, erasure SOP
+- **Artefacts they care about**: [GOVERNANCE.md Â§ GDPR](../governance/GOVERNANCE.md) table (per-article coverage + gap), records of processing, erasure SOP
 
 ---
 
-### VP Engineering â€” Technical Owner
+### VP Engineering â€?Technical Owner
 
 - **Primary KPIs**: uptime, MTTR, sprint velocity
 - **Decision rights**: deploy approval, on-call rotation, architectural escalations
@@ -105,15 +105,15 @@
   - Can my team understand this codebase in two weeks?
   - What's the rollback story?
 - **What you say**:
-  - "Every failure mode has an entry in [ARCHITECTURE.md Â§ Failure modes](ARCHITECTURE.md). Runbooks for the top-5 are in [GOVERNANCE-PROCEDURES.md Â§ Runbooks](GOVERNANCE-PROCEDURES.md)."
-  - "Rollback: Gold tables are Delta with 7-day time-travel â€” `delta_scan('s3://gold/cost_attribution', version_as_of => N)` for N from history. dbt re-runs are idempotent."
+  - "Every failure mode has an entry in [ARCHITECTURE.md Â§ Failure modes](../architecture/ARCHITECTURE.md). Runbooks for the top-5 are in [GOVERNANCE-PROCEDURES.md Â§ Runbooks](../runbooks/GOVERNANCE-PROCEDURES.md)."
+  - "Rollback: Gold tables are Delta with 7-day time-travel â€?`delta_scan('s3://gold/cost_attribution', version_as_of => N)` for N from history. dbt re-runs are idempotent."
   - "Onboarding target: `make up && make pipeline` runs in 15 min on a clean laptop; new engineer is committing in week 1."
 - **Cadence**: Weekly tech sync (Thursday)
-- **Artefacts**: [ARCHITECTURE.md](ARCHITECTURE.md), [ADRs](adr/), [DEPLOYMENT.md](DEPLOYMENT.md)
+- **Artefacts**: [ARCHITECTURE.md](../architecture/ARCHITECTURE.md), [ADRs](../architecture-decisions/adr/), [DEPLOYMENT.md](../operations/DEPLOYMENT.md)
 
 ---
 
-### Head of Customer Success â€” Renewals & Health
+### Head of Customer Success â€?Renewals & Health
 
 - **Primary KPIs**: NRR, customer-reported incidents, breach response time
 - **Concerns**:
@@ -124,11 +124,11 @@
   - "P99 latency trend per customer-facing model: `GET /sla/trends?model_id=...&days=14`. Use it in your weekly customer reviews."
   - "Future Phase 3 work: webhook from streaming health DAG to PagerDuty / Slack for breach-detected events."
 - **Cadence**: Weekly during MVP, monthly after GA; ad-hoc on customer escalations
-- **Artefacts**: [API.md Â§ /sla](API.md), Grafana dashboard (planned), Phase 3 alert integration
+- **Artefacts**: [API.md Â§ /sla](../architecture/API.md), Grafana dashboard (planned), Phase 3 alert integration
 
 ---
 
-### Data Science Lead â€” Primary User
+### Data Science Lead â€?Primary User
 
 - **Primary KPIs**: experiment-velocity (ideas per week), time-to-answer for ad-hoc questions
 - **Concerns**:
@@ -137,13 +137,13 @@
 - **What you say**:
   - "Eight REST endpoints cover the top-5 questions your team asks weekly. Live at `/docs`."
   - "Data quality: every Gold row passed a Silver GX gate + dbt schema + custom tests. If a Gold table is queryable, it's trustworthy."
-  - "If you need a custom cut, dbt is open to PRs â€” co-design a new mart in a half-day workshop."
+  - "If you need a custom cut, dbt is open to PRs â€?co-design a new mart in a half-day workshop."
 - **Cadence**: Weekly office hours during MVP; monthly after GA
-- **Artefacts**: [README.md](../README.md), [API.md](API.md), [STEP_BY_STEP.md](STEP_BY_STEP.md), sample notebooks (planned)
+- **Artefacts**: [README.md](../../README.md), [API.md](../architecture/API.md), [STEP_BY_STEP.md](../operations/STEP_BY_STEP.md), sample notebooks (planned)
 
 ---
 
-### Capacity Planning â€” Fleet Utilisation Customer
+### Capacity Planning â€?Fleet Utilisation Customer
 
 - **Primary KPIs**: cluster utilisation %, time-to-procurement-decision
 - **Concerns**:
@@ -151,43 +151,43 @@
   - Where should the next $1M of capex go?
 - **What you say**:
   - "`/utilization/hourly` and `/utilization/capacity` show per-`gpu_type` saturation in real-time (well, 15-min refresh)."
-  - "Cost-attribution mart also exposes `gpu_tier` mix â€” finance and capacity planning can align on hardware-purchase priorities from the same data."
+  - "Cost-attribution mart also exposes `gpu_tier` mix â€?finance and capacity planning can align on hardware-purchase priorities from the same data."
 - **Cadence**: Monthly capacity review
-- **Artefacts**: [API.md Â§ /utilization](API.md)
+- **Artefacts**: [API.md Â§ /utilization](../architecture/API.md)
 
 ---
 
-### Platform Engineering â€” Operator
+### Platform Engineering â€?Operator
 
 - **Primary KPIs**: deploy frequency, change failure rate, MTTR
 - **Concerns**:
   - How do I scale workers?
   - What do I run when a pipeline fails at 3 a.m.?
 - **What you say**:
-  - "Scale: `make scale-workers N=4` or `make scale-spark N=4` â€” no DAG redeploy."
-  - "Runbooks: [GOVERNANCE-PROCEDURES.md Â§ Runbooks](GOVERNANCE-PROCEDURES.md) covers the top failures. Airflow alerts (planned) wire to PagerDuty."
+  - "Scale: `make scale-workers N=4` or `make scale-spark N=4` â€?no DAG redeploy."
+  - "Runbooks: [GOVERNANCE-PROCEDURES.md Â§ Runbooks](../runbooks/GOVERNANCE-PROCEDURES.md) covers the top failures. Airflow alerts (planned) wire to PagerDuty."
 - **Cadence**: Embedded in eng team; weekly sync
-- **Artefacts**: [DEPLOYMENT.md](DEPLOYMENT.md), [GOVERNANCE-PROCEDURES.md](GOVERNANCE-PROCEDURES.md), [Makefile](../Makefile)
+- **Artefacts**: [DEPLOYMENT.md](../operations/DEPLOYMENT.md), [GOVERNANCE-PROCEDURES.md](../runbooks/GOVERNANCE-PROCEDURES.md), [Makefile](../../Makefile)
 
 ---
 
-## Audience-specific messaging â€” narrative templates
+## Audience-specific messaging â€?narrative templates
 
 When presenting to each audience, follow this 3-part structure. The differences are in the framing, not the facts.
 
 ### To executives (CTO, CFO, CISO)
 
 ```
-1. THE PAIN (30 s) â€” concrete dollar / risk number
+1. THE PAIN (30 s) â€?concrete dollar / risk number
    "Last quarter we missed $1.2M in invoicing because the manual
     billing close is 5 days and we can't catch pricing bugs."
 
-2. THE SOLUTION (60 s) â€” one diagram + one outcome metric
+2. THE SOLUTION (60 s) â€?one diagram + one outcome metric
    "Lakehouse pattern, batch + streaming, quality-gated.
-    Outcome: 5-day â†’ 1-day close, Â±8% â†’ Â±0.5% accuracy, $0
+    Outcome: 5-day â†?1-day close, Â±8% â†?Â±0.5% accuracy, $0
     customer-reported SLO breaches."
 
-3. THE ASK (30 s) â€” what, when, how much
+3. THE ASK (30 s) â€?what, when, how much
    "$2.4M capital, $1.8M/yr opex, breakeven month 18,
     220% 2-year ROI. Phase 1 starts week 1."
 ```
@@ -195,17 +195,17 @@ When presenting to each audience, follow this 3-part structure. The differences 
 ### To architects (VP Eng + team)
 
 ```
-1. THE PROBLEM SHAPE â€” what's hard about this
+1. THE PROBLEM SHAPE â€?what's hard about this
    "Late-arriving events, real-time SLO surfacing, and lineage
-    that survives an audit â€” at the same time."
+    that survives an audit â€?at the same time."
 
-2. THE PATTERN â€” what we copy from where
+2. THE PATTERN â€?what we copy from where
    "Medallion lakehouse (Databricks pattern). MERGE for late
     arrivals. Exactly-once via Delta + Kafka offsets. Cross-check
     via Great Expectations gate. dbt for SQL transforms. Same
     Spark engine for batch and streaming."
 
-3. THE TRADE-OFFS â€” what we accept
+3. THE TRADE-OFFS â€?what we accept
    "DuckDB serving is single-thread in prod (delta-kernel-rs
     FFI not thread-safe). MinIO single-instance dev only.
     `.env` secrets dev only. Each is a documented, time-bound
@@ -215,16 +215,16 @@ When presenting to each audience, follow this 3-part structure. The differences 
 ### To data scientists / engineers (primary users)
 
 ```
-1. WHAT YOU CAN DO TODAY â€” the immediate win
+1. WHAT YOU CAN DO TODAY â€?the immediate win
    "Three REST endpoints answer 'cost by org / model / SLA'
     in under 500 ms. Hit /docs for the schema."
 
-2. WHAT YOU CAN'T (YET) â€” be honest
+2. WHAT YOU CAN'T (YET) â€?be honest
    "No prompt / completion text in inference logs yet (PII
-    review pending). No streaming intra-second freshness â€”
+    review pending). No streaming intra-second freshness â€?
     30 s end-to-end is the SLA."
 
-3. HOW TO ASK FOR MORE â€” close the loop
+3. HOW TO ASK FOR MORE â€?close the loop
    "Need a new cut? dbt models are PR-able. Office hours
     every Tuesday."
 ```
@@ -232,30 +232,30 @@ When presenting to each audience, follow this 3-part structure. The differences 
 ### To finance
 
 ```
-1. THE COST PATH â€” show the math
-   "GPU $/hour Ã— hours Ã— billing rules â†’ silver.jobs.cost_usd
-    â†’ int_job_costs â†’ cost_attribution â†’ /cost/orgs"
+1. THE COST PATH â€?show the math
+   "GPU $/hour Ã— hours Ã— billing rules â†?silver.jobs.cost_usd
+    â†?int_job_costs â†?cost_attribution â†?/cost/orgs"
 
-2. THE CONTROLS â€” show the gates
+2. THE CONTROLS â€?show the gates
    "GX drift detector. dbt schema + custom tests.
     Audit trail via Delta time-travel for 7 days."
 
-3. WHAT YOU CAN ASK FOR â€” the contract
+3. WHAT YOU CAN ASK FOR â€?the contract
    "Daily refresh, Â±0.5% accuracy at GA. Monthly variance < 10%."
 ```
 
 ### To CISO / DPO
 
 ```
-1. WHAT'S IN PLACE TODAY â€” the structural foundation
+1. WHAT'S IN PLACE TODAY â€?the structural foundation
    "Quality-gated promotion, lineage, retention policies,
     Delta time-travel for audit."
 
-2. WHAT'S A KNOWN GAP â€” the explicit list
+2. WHAT'S A KNOWN GAP â€?the explicit list
    "[SECURITY.md] enumerates: no SSO, no TLS, no KMS, no
     centralised audit logs. Phase 2/3 deliverables."
 
-3. WHAT'S OUT OF SCOPE TODAY â€” be clear
+3. WHAT'S OUT OF SCOPE TODAY â€?be clear
    "PII redaction pre-Bronze: not in scope. Multi-region
     replication: Phase 4."
 ```
@@ -267,13 +267,13 @@ When presenting to each audience, follow this 3-part structure. The differences 
 | Audience | Cadence | Channel | Owner | Artefact |
 |---|---|---|---|---|
 | Executive committee (CTO + CFO + CISO) | Monthly | 30-min in-person or Zoom | Architect | Dashboard + 3-slide update |
-| Board update | Quarterly | Written 1-pager | CTO via architect | [3042README.md](../3042README.md) as template |
+| Board update | Quarterly | Written 1-pager | CTO via architect | [EXECUTIVE-SUMMARY.md](../../EXECUTIVE-SUMMARY.md) as template |
 | VP Engineering | Weekly | Tech sync | Architect | Sprint review notes |
-| Engineering team | Daily standup + weekly retro | Slack + meeting | Eng manager | None â€” verbal |
+| Engineering team | Daily standup + weekly retro | Slack + meeting | Eng manager | None â€?verbal |
 | Security review | Bi-weekly | Pair review | Architect + CISO designate | PR diffs + threat-model deltas |
 | Finance | Monthly | Variance review | Architect + Finance Director | Billing-mart walkthrough |
 | Customer Success | Weekly during MVP, monthly after | Demo | Architect | Live SLO dashboard |
-| DPO / Compliance | Quarterly | Compliance review | Architect + DPO | [GOVERNANCE.md](GOVERNANCE.md) + records of processing |
+| DPO / Compliance | Quarterly | Compliance review | Architect + DPO | [GOVERNANCE.md](../governance/GOVERNANCE.md) + records of processing |
 | All-hands | Quarterly | Company-wide | CTO | Roadmap update + demo |
 
 ---
@@ -300,12 +300,12 @@ R = Responsible Â· A = Accountable Â· C = Consulted Â· I = Informed
 
 These come up in every cross-functional review. Don't be that person.
 
-1. **"It's complicated"** â€” If you can't explain a design choice to a CFO in 30 seconds, the design is wrong or the framing is. Re-frame, don't retreat.
-2. **"The dashboard will fix it"** â€” A dashboard surfaces a problem; it doesn't fix anything. Always pair a metric with an action (alert + runbook).
-3. **"We'll harden it before prod"** â€” Production is a continuum, not a flip. List specific gates (SSO done by date X, KMS by date Y) instead.
-4. **"We chose X because it's industry-standard"** â€” Industry-standard for whom? Tie every choice to an ADR with context + alternatives + consequences.
-5. **"Trust me on the numbers"** â€” Always show the source. A `cost_attribution` row that can't be drilled to source events is a row finance won't trust.
+1. **"It's complicated"** â€?If you can't explain a design choice to a CFO in 30 seconds, the design is wrong or the framing is. Re-frame, don't retreat.
+2. **"The dashboard will fix it"** â€?A dashboard surfaces a problem; it doesn't fix anything. Always pair a metric with an action (alert + runbook).
+3. **"We'll harden it before prod"** â€?Production is a continuum, not a flip. List specific gates (SSO done by date X, KMS by date Y) instead.
+4. **"We chose X because it's industry-standard"** â€?Industry-standard for whom? Tie every choice to an ADR with context + alternatives + consequences.
+5. **"Trust me on the numbers"** â€?Always show the source. A `cost_attribution` row that can't be drilled to source events is a row finance won't trust.
 
 ---
 
-**See also**: [BUSINESS-CASE.md](BUSINESS-CASE.md) for the dollar-and-cents framing, [PRESENTATION.md](PRESENTATION.md) for the deck outline that uses these stakeholder frames.
+**See also**: [BUSINESS-CASE.md](../business/BUSINESS-CASE.md) for the dollar-and-cents framing, [PRESENTATION.md](../business/PRESENTATION.md) for the deck outline that uses these stakeholder frames.
