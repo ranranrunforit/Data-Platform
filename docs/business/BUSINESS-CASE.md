@@ -284,7 +284,4 @@ The case excludes the following deliberately:
 
 ---
 
-**Next**:           
-[PRESENTATION.md](PRESENTATION.md) for the deck outline;           
-[REQUIREMENTS-ANALYSIS.md](../analysis/REQUIREMENTS-ANALYSIS.md) for the detailed risk register;           
-[COST-MODEL.md](COST-MODEL.md) for the unit economics.          
+**Next**: [PRESENTATION.md](PRESENTATION.md) for the deck outline; [REQUIREMENTS-ANALYSIS.md](../analysis/REQUIREMENTS-ANALYSIS.md) for the detailed risk register; [COST-MODEL.md](COST-MODEL.md) for the unit economics.          
