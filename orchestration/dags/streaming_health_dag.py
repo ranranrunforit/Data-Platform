@@ -83,7 +83,7 @@ def check_delta_freshness(**context) -> None:
     import os
     from datetime import datetime, timezone
 
-    silver_path = os.getenv("DATA_SILVER_PATH", "s3a://silver")
+    bronze_path = os.getenv("DATA_BRONZE_PATH", "s3a://bronze")
     minio = os.getenv("MINIO_ENDPOINT", "http://minio:9000").replace("http://", "")
     aws_key = os.getenv("AWS_ACCESS_KEY_ID", "minioadmin")
     aws_secret = os.getenv("AWS_SECRET_ACCESS_KEY", "minioadmin123")
@@ -100,7 +100,7 @@ def check_delta_freshness(**context) -> None:
 
     row = con.execute(f"""
         SELECT MAX(_stream_ingested_at) AS latest
-        FROM delta_scan('{silver_path}/inference_stream')
+        FROM delta_scan('{bronze_path}/inference_stream')
     """).fetchone()
     con.close()
 

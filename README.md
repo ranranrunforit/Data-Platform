@@ -88,7 +88,7 @@ flowchart LR
 - `streaming_health_check` (every 15 min): Kafka lag + Delta freshness + SLO compliance
 - Workers scale horizontally: `make scale-workers N=4`
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full storage layout, table list, and component diagram.
+See [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md) for the full storage layout, table list, and component diagram.
 
 ---
 
@@ -163,7 +163,7 @@ make scale-spark   N=4   # 4 Spark workers
 | Inference API logs | 500,000 | LLM/diffusion/whisper requests across 7 model families, 4 regions, bimodal latency (cache hit vs. full generation), 22% cache hit rate |
 | Node metrics | ~6.6M rows | 96 nodes × 8 GPUs × hourly readings × 90 days; circadian utilisation pattern; thermal + power draw |
 
-The generator is in [data/generator/](data/generator/). See [docs/DATA-MODEL.md](docs/DATA-MODEL.md) for full schema documentation across all three layers.
+The generator is in [data/generator/](data/generator/). See [docs/architecture/DATA-MODEL.md](docs/architecture/DATA-MODEL.md) for full schema documentation across all three layers.
 
 ---
 
@@ -257,7 +257,7 @@ The `cost_attribution` mart aggregates this to `(date, org, user, model_arch, gp
 
 ### 4. One Delta table, two consumers
 
-The same `bronze/inference_stream` Delta table is **written** by Spark Structured Streaming (30 s lag, append-only) and **read** by the daily batch DAG and DuckDB. Delta Lake supports unlimited concurrent readers via its transaction log — no need for a separate "real-time table" and "batch table".
+The same `bronze/inference_stream` Delta table is **written** by Spark Structured Streaming (30 s lag, append-only) and **monitored** directly for freshness. The current daily batch build still materialises `silver/inference` from historical `bronze/inference_logs`; extending Silver to consume the streaming Delta table incrementally is the next obvious step.
 
 ### 5. CeleryExecutor for horizontal scaling
 
@@ -279,7 +279,7 @@ The job producer uses `acks=all` for durability; the inference producer uses `ac
 
 dbt-duckdb compiles Gold models from Silver Delta tables via DuckDB's `delta` extension. The same DuckDB engine powers FastAPI's serving layer. There is no Snowflake/BigQuery/Postgres in the loop — Delta files in MinIO are the single source of truth.
 
-> Trade-off documented in [docs/architecture.md](docs/architecture.md): the DuckDB delta extension's underlying `delta_kernel-rs` is not thread-safe, so the prod dbt target runs `threads: 1`. This is acceptable here (small data, hourly refresh) but would push us toward Spark SQL or a real warehouse if the platform scaled past TB-class Gold tables.
+> Trade-off documented in [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md): the DuckDB delta extension's underlying `delta_kernel-rs` is not thread-safe, so the prod dbt target runs `threads: 1`. This is acceptable here (small data, hourly refresh) but would push us toward Spark SQL or a real warehouse if the platform scaled past TB-class Gold tables.
 
 ---
 
@@ -298,7 +298,7 @@ GET /sla/trends?model_id=llama-3-70b-instruct&days=14  → latency trend
 
 Interactive docs (Swagger UI): http://localhost:8000/docs
 
-Full request/response schemas: [docs/API.md](docs/API.md).
+Full request/response schemas: [docs/architecture/API.md](docs/architecture/API.md).
 
 ---
 
@@ -347,11 +347,11 @@ The same config provisions real S3 buckets by swapping the MinIO provider for AW
 
 ADRs document the major choices:
 
-- [ADR-001: Delta Lake over plain Parquet](docs/adr/001-delta-lake-vs-parquet.md) — MERGE, ACID, native DuckDB reads
-- [ADR-002: Airflow over Prefect/Dagster](docs/adr/002-airflow-vs-prefect.md) — `SparkSubmitOperator` ecosystem + Celery scaling
-- [ADR-003: Apache Spark (PySpark) over Flink/Dask/Beam](docs/adr/003-pyspark-vs-alternatives.md) — same engine for batch and streaming; native Delta MERGE
-- [ADR-004: Terraform for Infrastructure as Code](docs/adr/004-terraform-for-iac.md) — same `.tf` targets MinIO and AWS S3
-- [ADR-005: Docker Compose for development, Kubernetes for production](docs/adr/005-docker-compose-dev-k8s-prod.md) — same images both targets, no re-architecture for migration
+- [ADR-001: Delta Lake over plain Parquet](docs/architecture-decisions/adr/001-delta-lake-vs-parquet.md) — MERGE, ACID, native DuckDB reads
+- [ADR-002: Airflow over Prefect/Dagster](docs/architecture-decisions/adr/002-airflow-vs-prefect.md) — `SparkSubmitOperator` ecosystem + Celery scaling
+- [ADR-003: Apache Spark (PySpark) over Flink/Dask/Beam](docs/architecture-decisions/adr/003-pyspark-vs-alternatives.md) — same engine for batch and streaming; native Delta MERGE
+- [ADR-004: Terraform for Infrastructure as Code](docs/architecture-decisions/adr/004-terraform-for-iac.md) — same `.tf` targets MinIO and AWS S3
+- [ADR-005: Docker Compose for development, Kubernetes for production](docs/architecture-decisions/adr/005-docker-compose-dev-k8s-prod.md) — same images both targets, no re-architecture for migration
 
 ---
 
@@ -359,14 +359,15 @@ ADRs document the major choices:
 
 | Document | Purpose |
 |---|---|
-| [docs/architecture.md](docs/architecture.md) | System overview, storage layout, design decisions |
-| [docs/DATA-MODEL.md](docs/DATA-MODEL.md) | Schema reference for Bronze / Silver / Gold |
-| [docs/API.md](docs/API.md) | REST endpoint specifications + sample responses |
-| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Local, Codespaces, and cloud deployment |
-| [docs/GOVERNANCE.md](docs/GOVERNANCE.md) | Data quality framework, lineage, ownership |
-| [docs/SECURITY.md](docs/SECURITY.md) | Authentication, secrets, network model, what's missing for prod |
-| [docs/COST-MODEL.md](docs/COST-MODEL.md) | Billing rules, GPU pricing, attribution grain |
-| [docs/STEP_BY_STEP.md](docs/STEP_BY_STEP.md) | First-run walkthrough |
+| [docs/README.md](docs/README.md) | Documentation index by theme |
+| [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md) | System overview, storage layout, design decisions |
+| [docs/architecture/DATA-MODEL.md](docs/architecture/DATA-MODEL.md) | Schema reference for Bronze / Silver / Gold |
+| [docs/architecture/API.md](docs/architecture/API.md) | REST endpoint specifications + sample responses |
+| [docs/operations/DEPLOYMENT.md](docs/operations/DEPLOYMENT.md) | Local, Codespaces, and cloud deployment |
+| [docs/governance/GOVERNANCE.md](docs/governance/GOVERNANCE.md) | Data quality framework, lineage, ownership |
+| [docs/governance/SECURITY.md](docs/governance/SECURITY.md) | Authentication, secrets, network model, what's missing for prod |
+| [docs/business/COST-MODEL.md](docs/business/COST-MODEL.md) | Billing rules, GPU pricing, attribution grain |
+| [docs/operations/STEP_BY_STEP.md](docs/operations/STEP_BY_STEP.md) | First-run walkthrough |
 
 ---
 
@@ -379,4 +380,4 @@ ADRs document the major choices:
 | Oracle Cloud Free Tier | 4 ARM cores + 24 GB (always free) | Run full stack persistently |
 | AWS / GCP | Swap MinIO → S3/GCS in `.env`; same Spark/dbt code | Cloud-native storage |
 
-Production deployment notes (Kubernetes, secrets management, real S3, RDS for Airflow metadata, AWS MSK/Confluent for Kafka): [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+Production deployment notes (Kubernetes, secrets management, real S3, RDS for Airflow metadata, AWS MSK/Confluent for Kafka): [docs/operations/DEPLOYMENT.md](docs/operations/DEPLOYMENT.md).

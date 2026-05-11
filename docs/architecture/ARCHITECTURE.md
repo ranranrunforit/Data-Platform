@@ -179,12 +179,12 @@ Full column-level reference is in [DATA-MODEL.md](DATA-MODEL.md).
 2. `streaming_consumer.py` reads with `startingOffsets=latest`, `maxOffsetsPerTrigger=10000`, watermark 10 min.
 3. Parsed records append to `bronze/inference_stream/` Delta table every 30 s.
 4. Checkpoints land in `s3a://checkpoints/inference_stream/` for exactly-once recovery.
-5. The daily batch DAG reads this same Delta table for Silver — one source, two consumers.
+5. The streaming table is retained as a real-time Bronze surface and monitored directly; integrating it into an incremental Silver build is the next obvious extension.
 
 ### Monitoring path (every 15 min)
 
 1. **Kafka lag.** `KafkaAdminClient.list_consumer_group_offsets("spark-streaming-inference")` — alert if total lag > 10 000.
-2. **Delta freshness.** DuckDB query `SELECT MAX(_stream_ingested_at) FROM delta_scan('s3://silver/inference_stream')` — alert if last write > 10 min ago.
+2. **Delta freshness.** DuckDB query `SELECT MAX(_stream_ingested_at) FROM delta_scan('s3://bronze/inference_stream')` — alert if last write > 10 min ago.
 3. **SLO breaches.** Query `gold/job_performance_sla` for today's rows where `slo_p99_breached = TRUE`. Branch to `alert_slo_breach` or `slo_ok`.
 
 ---

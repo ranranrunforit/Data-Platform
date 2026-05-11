@@ -112,7 +112,7 @@ Transformations applied:
 
 ### `silver/inference`
 
-Built from `bronze/inference_logs/` (and reads `bronze/inference_stream/` for streaming Silver). Partitioned by `log_date`.
+Built from `bronze/inference_logs/` in the current implementation. Partitioned by `log_date`.
 
 Transformations:
 - Schema cast
@@ -120,6 +120,8 @@ Transformations:
 - `cache_hit` → boolean
 - `is_success = (status_code = 200)`
 - `log_date`, `log_hour` derived from `timestamp`
+
+`bronze/inference_stream/` is written continuously by Structured Streaming and is monitored directly for freshness. Folding that stream into `silver/inference` incrementally is a natural next step, but it is not part of the current batch build.
 
 ### `silver/node_metrics`
 
